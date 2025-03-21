@@ -13,9 +13,7 @@ const InvoiceFormPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto">
-        <InvoiceForm invoiceToEdit={invoiceToEdit} />
-      </div>
+      <InvoiceForm invoiceToEdit={invoiceToEdit} />
     </AppLayout>
   );
 };
