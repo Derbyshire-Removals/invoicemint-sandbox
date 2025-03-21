@@ -19,6 +19,7 @@ export const printInvoice = (invoiceContent: HTMLElement | null) => {
       <head>
         <title>Invoice</title>
         <style>
+          <script src="https://cdn.tailwindcss.com"></script>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
           
           body {
