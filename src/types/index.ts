@@ -5,6 +5,7 @@ export interface Company {
   address: string;
   invoicePrefix: string;
   invoiceCounter: number;
+  currency: string;
   notes: string;
   createdAt: Date;
   updatedAt: Date;

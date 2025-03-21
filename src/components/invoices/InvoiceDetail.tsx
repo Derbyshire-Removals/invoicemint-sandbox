@@ -65,6 +65,9 @@ export function InvoiceDetail() {
     );
   }
 
+  // Use the company's currency or default to "$" if not available
+  const currencySymbol = company.currency || "$";
+
   return (
     <PageTransition>
       <div className="max-w-4xl mx-auto">
@@ -125,7 +128,7 @@ export function InvoiceDetail() {
               </div>
               <div className="text-right">
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2">Amount Due:</h2>
-                <div className="text-3xl font-bold">${invoice.total.toFixed(2)}</div>
+                <div className="text-3xl font-bold">{currencySymbol}{invoice.total.toFixed(2)}</div>
               </div>
             </div>
 
@@ -143,8 +146,8 @@ export function InvoiceDetail() {
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.description}</TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">${item.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{currencySymbol}{item.unitPrice.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{currencySymbol}{item.total.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -154,16 +157,16 @@ export function InvoiceDetail() {
               <div className="w-1/3 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal:</span>
-                  <span>${invoice.subtotal.toFixed(2)}</span>
+                  <span>{currencySymbol}{invoice.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax ({invoice.taxRate}%):</span>
-                  <span>${invoice.taxAmount.toFixed(2)}</span>
+                  <span>{currencySymbol}{invoice.taxAmount.toFixed(2)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Total:</span>
-                  <span>${invoice.total.toFixed(2)}</span>
+                  <span>{currencySymbol}{invoice.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

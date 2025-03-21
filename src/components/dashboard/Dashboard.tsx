@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useCompany } from "@/context/CompanyContext";
 import { useInvoice } from "@/context/InvoiceContext";
@@ -51,13 +50,14 @@ export function Dashboard() {
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   ).slice(0, 5);
   
-  // Calculate statistics
   const totalInvoices = companyInvoices.length;
   const totalAmount = companyInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const paidInvoices = companyInvoices.filter(inv => inv.status === 'paid');
   const paidAmount = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const overdueInvoices = companyInvoices.filter(inv => inv.status === 'overdue');
   const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  
+  const currencySymbol = currentCompany.currency || "$";
 
   return (
     <PageTransition>
@@ -106,7 +106,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${totalAmount.toFixed(2)}
+                {currencySymbol}{totalAmount.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Across all invoices
@@ -132,7 +132,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${paidAmount.toFixed(2)}
+                {currencySymbol}{paidAmount.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {paidInvoices.length} paid {paidInvoices.length === 1 ? "invoice" : "invoices"}
@@ -161,7 +161,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-500">
-                ${overdueAmount.toFixed(2)}
+                {currencySymbol}{overdueAmount.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {overdueInvoices.length} overdue {overdueInvoices.length === 1 ? "invoice" : "invoices"}
@@ -202,7 +202,7 @@ export function Dashboard() {
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">${invoice.total.toFixed(2)}</div>
+                        <div className="font-medium">{currencySymbol}{invoice.total.toFixed(2)}</div>
                         <div className="text-xs text-muted-foreground">
                           {format(new Date(invoice.date), "MMM d, yyyy")}
                         </div>
@@ -243,7 +243,7 @@ export function Dashboard() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Invoice Settings</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
                       <p className="text-sm">Prefix</p>
                       <p className="font-medium">{currentCompany.invoicePrefix}</p>
@@ -251,6 +251,10 @@ export function Dashboard() {
                     <div>
                       <p className="text-sm">Counter</p>
                       <p className="font-medium">{currentCompany.invoiceCounter}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm">Currency</p>
+                      <p className="font-medium">{currentCompany.currency || "$"}</p>
                     </div>
                   </div>
                 </div>

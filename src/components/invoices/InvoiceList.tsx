@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCompany } from "@/context/CompanyContext";
@@ -73,6 +72,9 @@ export function InvoiceList() {
       String(invoice.total).includes(searchTerm)
     );
   });
+
+  // Get currency symbol from current company
+  const currencySymbol = currentCompany.currency || "$";
 
   const handleCreateInvoice = () => {
     navigate("/invoices/new");
@@ -161,7 +163,7 @@ export function InvoiceList() {
                           {format(new Date(invoice.date), "MMM d, yyyy")}
                         </TableCell>
                         <TableCell>{invoice.customer.name}</TableCell>
-                        <TableCell>${invoice.total.toFixed(2)}</TableCell>
+                        <TableCell>{currencySymbol}{invoice.total.toFixed(2)}</TableCell>
                         <TableCell>
                           <StatusBadge status={invoice.status} />
                         </TableCell>

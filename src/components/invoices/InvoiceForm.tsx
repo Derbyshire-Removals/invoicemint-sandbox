@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -39,7 +38,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-// Form schema
 const formSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   date: z.date({
@@ -80,19 +78,18 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   const { addInvoice, updateInvoice, calculateTotals, createEmptyInvoiceItem } = useInvoice();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // State for calculated values
   const [subtotal, setSubtotal] = useState(0);
   const [taxAmount, setTaxAmount] = useState(0);
   const [total, setTotal] = useState(0);
   
   const isEditing = !!invoiceToEdit;
 
+  const currencySymbol = currentCompany?.currency || "$";
+
   const defaultDate = new Date();
-  // Default due date is 30 days from today
   const defaultDueDate = new Date();
   defaultDueDate.setDate(defaultDueDate.getDate() + 30);
 
-  // Default values for the form
   const defaultValues: FormValues = {
     companyId: currentCompany?.id || "",
     date: invoiceToEdit?.date ? new Date(invoiceToEdit.date) : defaultDate,
@@ -114,19 +111,16 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     defaultValues,
   });
   
-  // Set company id when currentCompany changes
   useEffect(() => {
     if (currentCompany && !form.getValues("companyId")) {
       form.setValue("companyId", currentCompany.id);
     }
   }, [currentCompany, form]);
   
-  // Watch for changes to items and tax rate to update totals
   const items = form.watch("items");
   const taxRate = form.watch("taxRate");
   
   useEffect(() => {
-    // Calculate item totals
     const itemsWithTotals = items.map(item => ({
       ...item,
       total: item.quantity * item.unitPrice
@@ -134,7 +128,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     
     form.setValue("items", itemsWithTotals);
     
-    // Calculate invoice totals
     const { subtotal, taxAmount, total } = calculateTotals(itemsWithTotals, taxRate);
     setSubtotal(subtotal);
     setTaxAmount(taxAmount);
@@ -145,7 +138,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Add calculated totals
       const invoiceData = {
         ...data,
         subtotal,
@@ -211,7 +203,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Invoice Details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Invoice Details</CardTitle>
@@ -326,7 +317,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 </CardContent>
               </Card>
 
-              {/* Customer Details */}
               <Card>
                 <CardHeader>
                   <CardTitle>Customer Details</CardTitle>
@@ -401,7 +391,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
               </Card>
             </div>
 
-            {/* Invoice Items */}
             <Card>
               <CardHeader>
                 <CardTitle>Invoice Items</CardTitle>
@@ -410,8 +399,8 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 <div className="grid grid-cols-12 gap-4 font-medium text-sm p-2">
                   <div className="col-span-5">Description</div>
                   <div className="col-span-2">Quantity</div>
-                  <div className="col-span-2">Unit Price</div>
-                  <div className="col-span-2">Total</div>
+                  <div className="col-span-2">Unit Price ({currencySymbol})</div>
+                  <div className="col-span-2">Total ({currencySymbol})</div>
                   <div className="col-span-1"></div>
                 </div>
 
@@ -524,7 +513,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 <div className="ml-auto space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium mr-8">Subtotal:</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-medium text-sm">Tax Rate:</span>
@@ -554,18 +543,17 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="font-medium mr-8">Tax:</span>
-                    <span>${taxAmount.toFixed(2)}</span>
+                    <span>{currencySymbol}{taxAmount.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span className="mr-8">Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{currencySymbol}{total.toFixed(2)}</span>
                   </div>
                 </div>
               </CardFooter>
             </Card>
 
-            {/* Notes */}
             <Card>
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
