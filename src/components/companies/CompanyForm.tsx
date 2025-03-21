@@ -31,6 +31,7 @@ const formSchema = z.object({
   address: z.string().min(1, "Address is required"),
   invoicePrefix: z.string().min(1, "Invoice prefix is required"),
   invoiceCounter: z.coerce.number().int().positive(),
+  currency: z.string().min(1, "Currency is required"),
   notes: z.string().optional(),
 });
 
@@ -53,6 +54,7 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
     address: companyToEdit?.address || "",
     invoicePrefix: companyToEdit?.invoicePrefix || "",
     invoiceCounter: companyToEdit?.invoiceCounter || 1,
+    currency: companyToEdit?.currency || "$",
     notes: companyToEdit?.notes || "",
   };
 
@@ -160,6 +162,20 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Currency Symbol</FormLabel>
+                <FormControl>
+                  <Input placeholder="$" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

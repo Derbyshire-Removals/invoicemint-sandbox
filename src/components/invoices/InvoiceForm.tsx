@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -124,7 +125,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     const itemsWithTotals = items.map(item => ({
       ...item,
       total: item.quantity * item.unitPrice
-    }));
+    })) as InvoiceItem[];
     
     form.setValue("items", itemsWithTotals);
     
@@ -142,7 +143,14 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
         ...data,
         subtotal,
         taxAmount,
-        total
+        total,
+        customer: {
+          name: data.customer.name,
+          address: data.customer.address,
+          email: data.customer.email,
+          phone: data.customer.phone
+        },
+        status: data.status
       };
       
       if (isEditing && invoiceToEdit) {
