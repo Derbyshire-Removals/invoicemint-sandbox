@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -153,41 +152,5 @@
   40% {
     transform: scale(1);
     opacity: 1;
-  }
-}
-
-/* Print styles */
-@media print {
-  @page {
-    size: A4;
-    margin: 1.5cm;
-  }
-  
-  body {
-    visibility: hidden;
-  }
-  
-  .print-content {
-    visibility: visible;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-  
-  .print-break-after {
-    page-break-after: always;
-  }
-  
-  .print-break-before {
-    page-break-before: always;
-  }
-  
-  .print-avoid-break {
-    page-break-inside: avoid;
   }
 }

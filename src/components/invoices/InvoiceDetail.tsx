@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { useInvoice } from "@/context/InvoiceContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -107,7 +106,7 @@ export function InvoiceDetail() {
           <CardHeader className="pb-6 pt-8 px-8 border-b">
             <div className="flex justify-between">
               <div>
-                <h1 className="text-3xl font-bold font-display mb-2">Invoice</h1>
+                <h1 className="text-3xl font-bold mb-2">Invoice</h1>
                 <div className="text-muted-foreground space-y-1 text-sm">
                   <p>{invoice.invoiceNumber}</p>
                   <p>Issue Date: {format(new Date(invoice.date), "MMMM d, yyyy")}</p>
@@ -127,25 +126,25 @@ export function InvoiceDetail() {
           <CardContent className="p-8 space-y-8">
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">Bill To:</h2>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2">Bill To:</h2>
                 <div className="font-medium">{invoice.customer.name}</div>
                 <div className="text-muted-foreground whitespace-pre-line">{invoice.customer.address}</div>
                 {invoice.customer.email && <div className="text-muted-foreground mt-1">{invoice.customer.email}</div>}
                 {invoice.customer.phone && <div className="text-muted-foreground">{invoice.customer.phone}</div>}
               </div>
               <div className="text-right">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">Amount Due:</h2>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2">Amount Due:</h2>
                 <div className="text-3xl font-bold">{currencySymbol}{invoice.total.toFixed(2)}</div>
               </div>
             </div>
 
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[50%] uppercase text-xs font-semibold">Description</TableHead>
-                  <TableHead className="text-right uppercase text-xs font-semibold">Qty</TableHead>
-                  <TableHead className="text-right uppercase text-xs font-semibold">Unit Price</TableHead>
-                  <TableHead className="text-right uppercase text-xs font-semibold">Amount</TableHead>
+                <TableRow>
+                  <TableHead className="w-[50%]">Description</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -154,7 +153,7 @@ export function InvoiceDetail() {
                     <TableCell className="font-medium">{item.description}</TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
                     <TableCell className="text-right">{currencySymbol}{item.unitPrice.toFixed(2)}</TableCell>
-                    <TableCell className="text-right font-medium">{currencySymbol}{item.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{currencySymbol}{item.total.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -162,15 +161,15 @@ export function InvoiceDetail() {
 
             <div className="flex justify-end">
               <div className="w-1/3 space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal:</span>
                   <span>{currencySymbol}{invoice.subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Tax ({invoice.taxRate}%):</span>
                   <span>{currencySymbol}{invoice.taxAmount.toFixed(2)}</span>
                 </div>
-                <Separator className="my-2" />
+                <Separator />
                 <div className="flex justify-between font-bold">
                   <span>Total:</span>
                   <span>{currencySymbol}{invoice.total.toFixed(2)}</span>
