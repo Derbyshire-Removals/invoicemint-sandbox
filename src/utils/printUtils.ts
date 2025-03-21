@@ -1,9 +1,20 @@
+
 /**
  * Opens a print popup window with the invoice content
- * @param invoiceHtml - The invoice HTML content
+ * @param invoiceElement - The invoice HTML element or content
  * @param title - Title for the popup window
  */
-export const printInvoice = (invoiceHtml: string, title: string = 'Invoice') => {
+export const printInvoice = (invoiceElement: HTMLDivElement | string | null, title: string = 'Invoice') => {
+  if (!invoiceElement) {
+    console.error('No invoice content provided');
+    return;
+  }
+  
+  // Get HTML content from element if needed
+  const invoiceHtml = typeof invoiceElement === 'string' 
+    ? invoiceElement 
+    : invoiceElement.outerHTML;
+  
   // Create a new popup window
   const printWindow = window.open('', '_blank', 'width=800,height=600');
   

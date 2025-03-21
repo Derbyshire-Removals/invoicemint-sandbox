@@ -1,9 +1,8 @@
-
 import React from 'react';
 
 export const PrintStyles: React.FC = () => {
   return (
-    <style jsx="true">{`
+    <style>{`
       @media print {
         @page {
           size: A4;
