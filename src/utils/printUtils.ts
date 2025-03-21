@@ -18,9 +18,9 @@ export const printInvoice = (invoiceContent: HTMLElement | null) => {
     <html>
       <head>
         <title>Invoice</title>
+        <link href="https://unpkg.com/tailwindcss@^3/dist/tailwind.min.css" rel="stylesheet">
         
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
           
                       /* Reset and base styles */
             * {
