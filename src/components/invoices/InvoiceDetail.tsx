@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useInvoice } from "@/context/InvoiceContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -71,7 +72,7 @@ export function InvoiceDetail() {
   const currencySymbol = company.currency || "$";
   
   const handlePrint = () => {
-    printInvoice(invoiceContentRef.current);
+    printInvoice(invoice, company);
   };
 
   return (
