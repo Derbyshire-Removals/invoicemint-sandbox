@@ -1,9 +1,16 @@
 
-export const printInvoice = (invoiceContent: HTMLElement | null) => {
+export const printInvoice = (invoiceContent: HTMLElement | string | null) => {
   if (!invoiceContent) return;
   
-  // Clone the invoice content
-  const printContent = invoiceContent.cloneNode(true) as HTMLElement;
+  // Get the HTML content
+  let htmlContent: string;
+  if (typeof invoiceContent === 'string') {
+    htmlContent = invoiceContent;
+  } else {
+    // Clone the invoice content
+    const printContent = invoiceContent.cloneNode(true) as HTMLElement;
+    htmlContent = printContent.outerHTML;
+  }
   
   // Create a new window
   const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -18,35 +25,124 @@ export const printInvoice = (invoiceContent: HTMLElement | null) => {
     <html>
       <head>
         <title>Invoice</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          @page {
+            size: A4;
+            margin: 1.5cm;
+          }
           
           body {
             font-family: 'Inter', sans-serif;
-            padding: 2rem;
-            color: #333;
+            color: #1a1a1a;
+            line-height: 1.5;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
           }
           
           .invoice-container {
             max-width: 800px;
             margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            position: relative;
           }
           
           .invoice-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e4e4e7;
+            padding: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          
+          .invoice-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 1rem;
+            letter-spacing: -0.025em;
           }
           
           .invoice-content {
             padding: 2rem;
           }
           
-          .invoice-footer {
-            padding: 2rem;
-            border-top: 1px solid #e4e4e7;
-            text-align: center;
-            color: #71717a;
+          .invoice-meta {
+            color: #4b5563;
             font-size: 0.875rem;
+          }
+          
+          .invoice-meta p {
+            margin: 0.25rem 0;
+          }
+          
+          .company-details {
+            text-align: right;
+          }
+          
+          .company-details .company-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            color: #111827;
+          }
+          
+          .company-details .company-address {
+            color: #4b5563;
+            font-size: 0.875rem;
+            white-space: pre-line;
+          }
+          
+          .bill-to {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+          }
+          
+          .bill-to-section h2, .amount-due-section h2 {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin: 0 0 0.5rem;
+            letter-spacing: 0.05em;
+          }
+          
+          .bill-to-section .customer-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #111827;
+            margin: 0 0 0.25rem;
+          }
+          
+          .bill-to-section .customer-address {
+            color: #4b5563;
+            font-size: 0.875rem;
+            white-space: pre-line;
+            margin-bottom: 0.5rem;
+          }
+          
+          .bill-to-section .customer-email,
+          .bill-to-section .customer-phone {
+            color: #4b5563;
+            font-size: 0.875rem;
+            margin: 0.125rem 0;
+          }
+          
+          .amount-due-section {
+            text-align: right;
+          }
+          
+          .amount-due-section .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
           }
           
           table {
@@ -56,45 +152,56 @@ export const printInvoice = (invoiceContent: HTMLElement | null) => {
           }
           
           th {
+            background-color: #f9fafb;
+            color: #4b5563;
             text-align: left;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #e4e4e7;
+            padding: 0.75rem;
             font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
           }
           
           td {
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #f4f4f5;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+            color: #111827;
           }
           
           .text-right {
             text-align: right;
           }
           
-          .invoice-total {
+          .invoice-summary {
             margin-left: auto;
             width: 33.333%;
           }
           
-          .invoice-total-row {
+          .invoice-summary-row {
             display: flex;
             justify-content: space-between;
             padding: 0.5rem 0;
+            font-size: 0.875rem;
+            color: #4b5563;
           }
           
-          .invoice-total-row.final {
+          .invoice-summary-row.final {
             font-weight: 600;
-            border-top: 1px solid #e4e4e7;
+            border-top: 1px solid #e5e7eb;
             padding-top: 0.75rem;
             margin-top: 0.25rem;
+            color: #111827;
           }
           
           .status-badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 500;
+            margin-bottom: 1rem;
           }
           
           .status-draft {
@@ -103,42 +210,75 @@ export const printInvoice = (invoiceContent: HTMLElement | null) => {
           }
           
           .status-sent {
-            background-color: #f0f9ff;
-            color: #0369a1;
+            background-color: #dbeafe;
+            color: #1e40af;
           }
           
           .status-paid {
-            background-color: #f0fdf4;
-            color: #15803d;
+            background-color: #dcfce7;
+            color: #166534;
           }
           
           .status-overdue {
-            background-color: #fef2f2;
+            background-color: #fee2e2;
             color: #b91c1c;
           }
           
+          .invoice-notes {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+          }
+          
+          .invoice-notes h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: #4b5563;
+          }
+          
+          .invoice-notes p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            white-space: pre-line;
+            margin: 0;
+          }
+          
+          .invoice-footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.875rem;
+          }
+          
+          .no-print {
+            display: none;
+          }
+          
           @media print {
-            @page {
-              size: A4;
-              margin: 1cm;
-            }
-            
             body {
               padding: 0;
+              background: none;
+            }
+            
+            .invoice-container {
+              box-shadow: none;
+              max-width: none;
             }
             
             .no-print {
-              display: none;
+              display: none !important;
             }
           }
         </style>
       </head>
       <body>
         <div class="invoice-container">
-          ${printContent.outerHTML}
+          ${htmlContent}
         </div>
         <div class="no-print" style="text-align: center; margin-top: 2rem;">
-          <button onclick="window.print(); window.close();" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500;">
+          <button onclick="window.print(); window.close();" style="padding: 0.5rem 1.5rem; background: #4f46e5; color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500; font-size: 0.875rem;">
             Print Invoice
           </button>
         </div>

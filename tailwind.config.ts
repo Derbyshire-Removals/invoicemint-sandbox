@@ -105,8 +105,24 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
-				display: ['Inter', 'sans-serif']
-			}
+				display: ['Playfair Display', 'serif'],
+				invoice: ['Playfair Display', 'serif']
+			},
+			typography: {
+				invoice: {
+					css: {
+						fontFamily: 'Playfair Display, serif',
+					},
+				},
+			},
+			printStyles: {
+				'invoice-page': {
+					'@page': {
+						margin: '0',
+						size: 'A4',
+					},
+				},
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
