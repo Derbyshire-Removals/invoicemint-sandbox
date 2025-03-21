@@ -3,7 +3,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import { useInvoice } from "@/context/InvoiceContext";
@@ -87,13 +87,21 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   const currencySymbol = currentCompany?.currency || "$";
 
   const defaultDate = new Date();
-  const defaultDueDate = new Date();
-  defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+  
+  const getDefaultDueDate = () => {
+    if (invoiceToEdit?.dueDate) {
+      return new Date(invoiceToEdit.dueDate);
+    } else if (currentCompany?.paymentTerms) {
+      return addDays(new Date(), currentCompany.paymentTerms);
+    } else {
+      return addDays(new Date(), 30);
+    }
+  };
 
   const defaultValues: FormValues = {
     companyId: currentCompany?.id || "",
     date: invoiceToEdit?.date ? new Date(invoiceToEdit.date) : defaultDate,
-    dueDate: invoiceToEdit?.dueDate ? new Date(invoiceToEdit.dueDate) : defaultDueDate,
+    dueDate: getDefaultDueDate(),
     customer: {
       name: invoiceToEdit?.customer.name || "",
       address: invoiceToEdit?.customer.address || "",
@@ -116,6 +124,15 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
       form.setValue("companyId", currentCompany.id);
     }
   }, [currentCompany, form]);
+  
+  const invoiceDate = form.watch("date");
+  
+  useEffect(() => {
+    if (!isEditing && currentCompany?.paymentTerms && invoiceDate) {
+      const newDueDate = addDays(new Date(invoiceDate), currentCompany.paymentTerms);
+      form.setValue("dueDate", newDueDate);
+    }
+  }, [invoiceDate, currentCompany?.paymentTerms, form, isEditing]);
   
   const items = form.watch("items");
   const taxRate = form.watch("taxRate");

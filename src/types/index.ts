@@ -1,4 +1,3 @@
-
 export interface Company {
   id: string;
   name: string;
@@ -7,6 +6,7 @@ export interface Company {
   invoiceCounter: number;
   currency: string;
   notes: string;
+  paymentTerms: number; // Number of days to pay within
   createdAt: Date;
   updatedAt: Date;
 }

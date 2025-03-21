@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Company } from '@/types';
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ const initialCompanies: Company[] = [
     invoiceCounter: 1,
     currency: '$',
     notes: 'Thank you for your business!',
+    paymentTerms: 30,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -23,6 +25,7 @@ const initialCompanies: Company[] = [
     invoiceCounter: 1,
     currency: '$',
     notes: 'Payment due within 30 days.',
+    paymentTerms: 14,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

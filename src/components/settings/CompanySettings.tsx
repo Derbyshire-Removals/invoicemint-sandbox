@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCompany } from "@/context/CompanyContext";
 import { PageTransition } from "../ui-custom/PageTransition";
@@ -142,6 +141,10 @@ export function CompanySettings() {
                         {company.invoicePrefix}
                         {company.invoiceCounter.toString().padStart(3, '0')}
                       </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Payment Terms:</span>
+                      <span className="font-medium">{company.paymentTerms} days</span>
                     </div>
                   </div>
                   

@@ -32,6 +32,7 @@ const formSchema = z.object({
   invoicePrefix: z.string().min(1, "Invoice prefix is required"),
   invoiceCounter: z.coerce.number().int().positive(),
   currency: z.string().min(1, "Currency is required"),
+  paymentTerms: z.coerce.number().int().positive(),
   notes: z.string().optional(),
 });
 
@@ -55,6 +56,7 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
     invoicePrefix: companyToEdit?.invoicePrefix || "",
     invoiceCounter: companyToEdit?.invoiceCounter || 1,
     currency: companyToEdit?.currency || "$",
+    paymentTerms: companyToEdit?.paymentTerms || 30,
     notes: companyToEdit?.notes || "",
   };
 
@@ -77,6 +79,7 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
           invoicePrefix: data.invoicePrefix,
           invoiceCounter: data.invoiceCounter,
           currency: data.currency,
+          paymentTerms: data.paymentTerms,
           notes: data.notes || "",
         };
         addCompany(newCompany);
@@ -172,19 +175,40 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Currency Symbol</FormLabel>
-                <FormControl>
-                  <Input placeholder="$" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency Symbol</FormLabel>
+                  <FormControl>
+                    <Input placeholder="$" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="paymentTerms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Terms (Days)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="30"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
