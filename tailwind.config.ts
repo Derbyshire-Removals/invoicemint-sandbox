@@ -62,6 +62,11 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				invoice: {
+					'section-bg': '#f8fafc',
+					'table-header': '#f1f5f9',
+					'table-border': '#e2e8f0',
 				}
 			},
 			borderRadius: {
@@ -106,6 +111,9 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
 				display: ['Inter', 'sans-serif']
+			},
+			screens: {
+				'print': {'raw': 'print'},
 			}
 		}
 	},
