@@ -70,7 +70,16 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
       if (isEditing && companyToEdit) {
         updateCompany(companyToEdit.id, data);
       } else {
-        addCompany(data);
+        // Make sure all required fields are present
+        const newCompany: Omit<Company, "id" | "createdAt" | "updatedAt"> = {
+          name: data.name,
+          address: data.address,
+          invoicePrefix: data.invoicePrefix,
+          invoiceCounter: data.invoiceCounter,
+          currency: data.currency,
+          notes: data.notes || "",
+        };
+        addCompany(newCompany);
       }
       
       if (onSuccess) {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -139,24 +138,52 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     setIsSubmitting(true);
     
     try {
-      const invoiceData = {
-        ...data,
-        subtotal,
-        taxAmount,
-        total,
-        customer: {
-          name: data.customer.name,
-          address: data.customer.address,
-          email: data.customer.email,
-          phone: data.customer.phone
-        },
-        status: data.status
-      };
+      const typedItems: InvoiceItem[] = data.items.map(item => ({
+        id: item.id,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.total
+      }));
       
       if (isEditing && invoiceToEdit) {
-        updateInvoice(invoiceToEdit.id, invoiceData);
+        updateInvoice(invoiceToEdit.id, {
+          companyId: data.companyId,
+          date: data.date,
+          dueDate: data.dueDate,
+          customer: {
+            name: data.customer.name,
+            address: data.customer.address,
+            email: data.customer.email || "",
+            phone: data.customer.phone || ""
+          },
+          items: typedItems,
+          subtotal,
+          taxRate: data.taxRate,
+          taxAmount,
+          total,
+          notes: data.notes,
+          status: data.status
+        });
       } else {
-        addInvoice(invoiceData);
+        addInvoice({
+          companyId: data.companyId,
+          date: data.date,
+          dueDate: data.dueDate,
+          customer: {
+            name: data.customer.name,
+            address: data.customer.address,
+            email: data.customer.email || "",
+            phone: data.customer.phone || ""
+          },
+          items: typedItems,
+          subtotal,
+          taxRate: data.taxRate,
+          taxAmount,
+          total,
+          notes: data.notes,
+          status: data.status
+        });
       }
       
       navigate("/invoices");
