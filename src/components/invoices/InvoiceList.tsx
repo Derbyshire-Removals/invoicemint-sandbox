@@ -8,6 +8,7 @@ import { FileText, PlusCircle, FileSearch, Printer, Download, Search } from "luc
 import { format } from "date-fns";
 import { StatusBadge } from "../ui-custom/StatusBadge";
 import { Invoice } from "@/types";
+import { printInvoice } from "@/utils/printUtils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +64,6 @@ export function InvoiceList() {
 
   const companyInvoices = getInvoicesByCompany(currentCompany.id);
   
-  // Filter invoices based on search term
   const filteredInvoices = companyInvoices.filter(invoice => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -73,7 +73,6 @@ export function InvoiceList() {
     );
   });
 
-  // Get currency symbol from current company
   const currencySymbol = currentCompany.currency || "$";
 
   const handleCreateInvoice = () => {
@@ -90,6 +89,10 @@ export function InvoiceList() {
 
   const handleDeleteInvoice = (id: string) => {
     deleteInvoice(id);
+  };
+
+  const handlePrintInvoice = (invoiceId: string) => {
+    navigate(`/invoices/${invoiceId}`);
   };
 
   return (
@@ -191,14 +194,13 @@ export function InvoiceList() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => {
                                 e.stopPropagation();
-                                window.print();
+                                handlePrintInvoice(invoice.id);
                               }}>
                                 <Printer className="mr-2 h-4 w-4" />
                                 Print
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => {
                                 e.stopPropagation();
-                                // Download functionality would go here
                               }}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Download

@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { useInvoice } from "@/context/InvoiceContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -6,6 +5,8 @@ import { PageTransition } from "../ui-custom/PageTransition";
 import { StatusBadge } from "../ui-custom/StatusBadge";
 import { format } from "date-fns";
 import { ArrowLeft, Download, Edit, Printer } from "lucide-react";
+import { useRef } from "react";
+import { printInvoice } from "@/utils/printUtils";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -24,6 +25,7 @@ export function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
   const { invoices } = useInvoice();
   const { companies } = useCompany();
+  const invoiceContentRef = useRef<HTMLDivElement>(null);
   
   // Find the invoice
   const invoice = invoices.find(inv => inv.id === id);
@@ -67,6 +69,10 @@ export function InvoiceDetail() {
 
   // Use the company's currency or default to "$" if not available
   const currencySymbol = company.currency || "$";
+  
+  const handlePrint = () => {
+    printInvoice(invoiceContentRef.current);
+  };
 
   return (
     <PageTransition>
@@ -81,7 +87,7 @@ export function InvoiceDetail() {
             Back to Invoices
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => window.print()}>
+            <Button variant="outline" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Print
             </Button>
@@ -96,7 +102,7 @@ export function InvoiceDetail() {
           </div>
         </div>
 
-        <Card className="border-none shadow-lg print:shadow-none">
+        <Card className="border-none shadow-lg print:shadow-none" ref={invoiceContentRef}>
           <CardHeader className="pb-6 pt-8 px-8 border-b">
             <div className="flex justify-between">
               <div>
