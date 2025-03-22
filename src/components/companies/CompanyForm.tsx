@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -53,7 +54,7 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
     address: companyToEdit?.address || "",
     invoicePrefix: companyToEdit?.invoicePrefix || "",
     invoiceCounter: companyToEdit?.invoiceCounter || 1,
-    currency: companyToEdit?.currency || "$",
+    currency: companyToEdit?.currency || "£",
     paymentTerms: companyToEdit?.paymentTerms || 30,
     notes: companyToEdit?.notes || "",
   };
