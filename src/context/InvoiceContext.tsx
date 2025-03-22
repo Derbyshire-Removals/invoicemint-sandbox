@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Invoice, InvoiceItem } from '@/types';
 import { useCompany } from './CompanyContext';
@@ -7,6 +8,7 @@ interface InvoiceContextType {
   invoices: Invoice[];
   addInvoice: (invoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => void;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
+  updateInvoiceNumber: (id: string, invoiceNumber: string) => void;
   deleteInvoice: (id: string) => void;
   getInvoicesByCompany: (companyId: string) => Invoice[];
   calculateTotals: (items: InvoiceItem[], taxRate: number) => { 
@@ -72,6 +74,19 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Invoice updated");
   };
 
+  // New function to update invoice number specifically
+  const updateInvoiceNumber = (id: string, invoiceNumber: string) => {
+    setInvoices(prev => 
+      prev.map(invoice => 
+        invoice.id === id 
+          ? { ...invoice, invoiceNumber, updatedAt: new Date() } 
+          : invoice
+      )
+    );
+    
+    toast.success("Invoice number updated");
+  };
+
   const deleteInvoice = (id: string) => {
     // Get the invoice number before deletion
     const invoiceToDelete = invoices.find(invoice => invoice.id === id);
@@ -103,6 +118,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         invoices,
         addInvoice,
         updateInvoice,
+        updateInvoiceNumber,
         deleteInvoice,
         getInvoicesByCompany,
         calculateTotals,

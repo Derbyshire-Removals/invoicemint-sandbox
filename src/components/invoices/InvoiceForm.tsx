@@ -40,6 +40,7 @@ import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
+  invoiceNumber: z.string().min(1, "Invoice number is required"),
   date: z.date({
     required_error: "Invoice date is required",
   }),
@@ -75,7 +76,7 @@ interface InvoiceFormProps {
 export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   const navigate = useNavigate();
   const { currentCompany } = useCompany();
-  const { addInvoice, updateInvoice, calculateTotals, createEmptyInvoiceItem } = useInvoice();
+  const { addInvoice, updateInvoice, updateInvoiceNumber, calculateTotals, createEmptyInvoiceItem } = useInvoice();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [subtotal, setSubtotal] = useState(0);
@@ -84,7 +85,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   
   const isEditing = !!invoiceToEdit;
 
-  const currencySymbol = currentCompany?.currency || "$";
+  const currencySymbol = currentCompany?.currency || "£";
 
   const defaultDate = new Date();
   
@@ -100,6 +101,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
 
   const defaultValues: FormValues = {
     companyId: currentCompany?.id || "",
+    invoiceNumber: invoiceToEdit?.invoiceNumber || "",
     date: invoiceToEdit?.date ? new Date(invoiceToEdit.date) : defaultDate,
     dueDate: getDefaultDueDate(),
     customer: {
@@ -164,6 +166,10 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
       }));
       
       if (isEditing && invoiceToEdit) {
+        if (data.invoiceNumber !== invoiceToEdit.invoiceNumber) {
+          updateInvoiceNumber(invoiceToEdit.id, data.invoiceNumber);
+        }
+        
         updateInvoice(invoiceToEdit.id, {
           companyId: data.companyId,
           date: data.date,
@@ -260,6 +266,22 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                   <CardTitle>Invoice Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {isEditing && (
+                    <FormField
+                      control={form.control}
+                      name="invoiceNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Invoice Number</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   <FormField
                     control={form.control}
                     name="date"
