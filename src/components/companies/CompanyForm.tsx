@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -11,6 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Company } from "@/types";
 
-// Define the form schema
 const formSchema = z.object({
   name: z.string().min(1, "Company name is required"),
   address: z.string().min(1, "Address is required"),
@@ -49,7 +48,6 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
   
   const isEditing = !!companyToEdit;
 
-  // Default values for the form
   const defaultValues: FormValues = {
     name: companyToEdit?.name || "",
     address: companyToEdit?.address || "",
@@ -72,7 +70,6 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
       if (isEditing && companyToEdit) {
         updateCompany(companyToEdit.id, data);
       } else {
-        // Make sure all required fields are present
         const newCompany: Omit<Company, "id" | "createdAt" | "updatedAt"> = {
           name: data.name,
           address: data.address,
@@ -229,9 +226,11 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
           />
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isEditing ? "Update Company" : "Add Company"}
-            </Button>
+            <DialogClose asChild>
+              <Button type="submit" disabled={isSubmitting}>
+                {isEditing ? "Update Company" : "Add Company"}
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </form>
       </Form>
