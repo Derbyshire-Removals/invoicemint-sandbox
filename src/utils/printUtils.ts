@@ -13,7 +13,7 @@ export const printInvoice = (invoice: Invoice, company: Company | null) => {
   const currencySymbol = company.currency || "$";
   
   // Create a file name with company name and invoice number
-  const fileName = `${company.name} - ${invoice.invoiceNumber}`;
+  const fileName = `${company.name} - Invoice ${invoice.invoiceNumber}`;
   
   // Create a new window
   const printWindow = window.open('', '_blank', 'width=800,height=600');
