@@ -12,6 +12,9 @@ export const printInvoice = (invoice: Invoice, company: Company | null) => {
   // Format currency
   const currencySymbol = company.currency || "$";
   
+  // Create a file name with company name and invoice number
+  const fileName = `${company.name} - ${invoice.invoiceNumber}`;
+  
   // Create a new window
   const printWindow = window.open('', '_blank', 'width=800,height=600');
   if (!printWindow) {
@@ -24,7 +27,7 @@ export const printInvoice = (invoice: Invoice, company: Company | null) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Invoice ${invoice.invoiceNumber}</title>
+        <title>${fileName}</title>
         <link href="https://unpkg.com/tailwindcss@^3/dist/tailwind.min.css" rel="stylesheet">
         
         <style>
@@ -369,6 +372,9 @@ export const printInvoice = (invoice: Invoice, company: Company | null) => {
           </div>
         </div>
         <script>
+          // Set filename for save/print dialogue
+          document.title = '${fileName}';
+          
           // Auto print after a short delay
           setTimeout(() => {
             window.print();
