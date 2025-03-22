@@ -20,11 +20,24 @@ import {
 import { cn } from "@/lib/utils";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { CompanyForm } from "@/components/companies/CompanyForm";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export function CompanySwitcher() {
   const { companies, currentCompany, setCurrentCompany } = useCompany();
   const [open, setOpen] = useState(false);
   const [showNewCompanyDialog, setShowNewCompanyDialog] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleCompanyChange = (company) => {
+    setCurrentCompany(company);
+    setOpen(false);
+    
+    // Navigate to dashboard if not already there, or just stay on the dashboard to refresh data
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+  };
 
   if (!companies.length) {
     return (
@@ -65,10 +78,7 @@ export function CompanySwitcher() {
                   <CommandItem
                     key={company.id}
                     className="text-sm"
-                    onSelect={() => {
-                      setCurrentCompany(company);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleCompanyChange(company)}
                   >
                     <span>{company.name}</span>
                     {currentCompany?.id === company.id && (
