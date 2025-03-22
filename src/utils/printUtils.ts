@@ -288,7 +288,6 @@ export const printInvoice = (invoice: Invoice, company: Company | null) => {
                   </div>
                 </div>
                 <div class="text-right">
-                  <span class="status-badge">${getStatusText(invoice.status)}</span>
                   <div class="sender-details">
                     <div class="sender-name">${company.name}</div>
                     <div class="sender-address">${company.address}</div>
