@@ -9,7 +9,7 @@ import { CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import { useInvoice } from "@/context/InvoiceContext";
 import { PageTransition } from "../ui-custom/PageTransition";
-import { InvoiceItem } from "@/types";
+import { InvoiceItem, Invoice } from "@/types";
 
 import {
   Form,
@@ -71,12 +71,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function InvoiceForm() {
-  console.log("InvoiceForm rendering - create only mode");
+interface InvoiceFormProps {
+  initialInvoice?: Invoice;
+  isEditMode?: boolean;
+}
+
+export function InvoiceForm({ initialInvoice, isEditMode = false }: InvoiceFormProps) {
+  console.log("InvoiceForm rendering", { isEditMode, initialInvoice });
   
   const navigate = useNavigate();
   const { currentCompany } = useCompany();
-  const { addInvoice, calculateTotals, createEmptyInvoiceItem } = useInvoice();
+  const { addInvoice, updateInvoice, calculateTotals, createEmptyInvoiceItem } = useInvoice();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [subtotal, setSubtotal] = useState(0);
@@ -105,26 +110,61 @@ export function InvoiceForm() {
     }
   };
 
-  const defaultItems: InvoiceItem[] = [createEmptyInvoiceItem()];
-  
-  const defaultValues = {
-    companyId: currentCompany?.id || "",
-    invoiceNumber: generateDefaultInvoiceNumber(),
-    date: defaultDate,
-    dueDate: getDefaultDueDate(),
-    customer: {
-      name: "",
-      address: "",
-      email: "",
-      phone: "",
-    },
-    items: defaultItems,
-    taxRate: 0,
-    notes: currentCompany?.notes || "",
-    status: "draft" as const,
+  // Generate default values based on edit mode
+  const getDefaultValues = () => {
+    if (isEditMode && initialInvoice) {
+      console.log("Setting up form with initial invoice for editing:", initialInvoice);
+      
+      // Deep clone of invoice items to avoid reference issues
+      const itemsDeepClone = initialInvoice.items.map(item => ({
+        id: String(item.id),
+        description: String(item.description),
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }));
+      
+      return {
+        companyId: initialInvoice.companyId,
+        invoiceNumber: initialInvoice.invoiceNumber,
+        date: new Date(initialInvoice.date),
+        dueDate: new Date(initialInvoice.dueDate),
+        customer: {
+          name: initialInvoice.customer.name,
+          address: initialInvoice.customer.address,
+          email: initialInvoice.customer.email || "",
+          phone: initialInvoice.customer.phone || ""
+        },
+        items: itemsDeepClone,
+        taxRate: Number(initialInvoice.taxRate),
+        notes: initialInvoice.notes || "",
+        status: initialInvoice.status
+      };
+    } else {
+      // Default values for new invoice
+      const defaultItems: InvoiceItem[] = [createEmptyInvoiceItem()];
+      
+      return {
+        companyId: currentCompany?.id || "",
+        invoiceNumber: generateDefaultInvoiceNumber(),
+        date: defaultDate,
+        dueDate: getDefaultDueDate(),
+        customer: {
+          name: "",
+          address: "",
+          email: "",
+          phone: "",
+        },
+        items: defaultItems,
+        taxRate: 0,
+        notes: currentCompany?.notes || "",
+        status: "draft" as const,
+      };
+    }
   };
 
-  console.log("Setting up form with default values:", defaultValues);
+  const defaultValues = getDefaultValues();
+  console.log("Form default values:", defaultValues);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -137,6 +177,15 @@ export function InvoiceForm() {
       form.setValue("companyId", currentCompany.id);
     }
   }, [currentCompany, form]);
+  
+  useEffect(() => {
+    if (isEditMode && initialInvoice) {
+      // Set the initial calculated values
+      setSubtotal(initialInvoice.subtotal);
+      setTaxAmount(initialInvoice.taxAmount);
+      setTotal(initialInvoice.total);
+    }
+  }, [isEditMode, initialInvoice]);
   
   const invoiceDate = form.watch("date");
   
@@ -203,17 +252,24 @@ export function InvoiceForm() {
         status: data.status
       };
       
-      console.log("Sending invoice data to be added:", invoiceData);
-      const newInvoice = addInvoice(invoiceData);
-      console.log("New invoice created:", newInvoice);
-      toast.success(`Invoice ${newInvoice.invoiceNumber} created successfully`);
+      if (isEditMode && initialInvoice) {
+        console.log("Updating invoice with data:", invoiceData);
+        const updatedInvoice = updateInvoice(initialInvoice.id, invoiceData);
+        console.log("Invoice updated:", updatedInvoice);
+        toast.success(`Invoice ${updatedInvoice.invoiceNumber} updated successfully`);
+      } else {
+        console.log("Creating new invoice with data:", invoiceData);
+        const newInvoice = addInvoice(invoiceData);
+        console.log("New invoice created:", newInvoice);
+        toast.success(`Invoice ${newInvoice.invoiceNumber} created successfully`);
+      }
       
       setTimeout(() => {
         navigate("/invoices");
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error(`Failed to create invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsSubmitting(false);
     }
   };
@@ -253,7 +309,9 @@ export function InvoiceForm() {
     <PageTransition>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Create New Invoice</h1>
+          <h1 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Invoice' : 'Create New Invoice'}
+          </h1>
           <Button
             variant="outline"
             onClick={() => navigate("/invoices")}
@@ -671,7 +729,7 @@ export function InvoiceForm() {
                     });
                   }}
                 >
-                  {isSubmitting ? "Saving..." : "Create Invoice"}
+                  {isSubmitting ? "Saving..." : isEditMode ? "Update Invoice" : "Create Invoice"}
                 </Button>
               </CardFooter>
             </Card>

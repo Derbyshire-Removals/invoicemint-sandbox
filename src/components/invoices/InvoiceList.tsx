@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCompany } from "@/context/CompanyContext";
 import { useInvoice } from "@/context/InvoiceContext";
 import { PageTransition } from "../ui-custom/PageTransition";
 import { EmptyState } from "../ui-custom/EmptyState";
-import { FileText, PlusCircle, FileSearch, Printer, Download, Search } from "lucide-react";
+import { FileText, PlusCircle, FileSearch, Printer, Download, Search, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { StatusBadge } from "../ui-custom/StatusBadge";
 import { Invoice } from "@/types";
@@ -84,6 +85,7 @@ export function InvoiceList() {
   };
 
   const handleEditInvoice = (invoice: Invoice) => {
+    console.log("Navigating to edit invoice:", invoice.id);
     navigate(`/invoices/${invoice.id}/edit`);
   };
 
@@ -92,7 +94,11 @@ export function InvoiceList() {
   };
 
   const handlePrintInvoice = (invoiceId: string) => {
-    navigate(`/invoices/${invoiceId}`);
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      const company = currentCompany;
+      printInvoice(invoice, company);
+    }
   };
 
   return (
@@ -189,7 +195,7 @@ export function InvoiceList() {
                                 e.stopPropagation();
                                 handleEditInvoice(invoice);
                               }}>
-                                <PlusCircle className="mr-2 h-4 w-4" />
+                                <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => {

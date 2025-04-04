@@ -7,8 +7,10 @@ import { toast } from "sonner";
 interface InvoiceContextType {
   invoices: Invoice[];
   addInvoice: (invoice: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => Invoice;
+  updateInvoice: (id: string, invoice: Omit<Invoice, 'id' | 'createdAt'>) => Invoice;
   deleteInvoice: (id: string) => void;
   getInvoicesByCompany: (companyId: string) => Invoice[];
+  getInvoice: (id: string) => Invoice | undefined;
   calculateTotals: (items: InvoiceItem[], taxRate: number) => { 
     subtotal: number; 
     taxAmount: number; 
@@ -44,7 +46,11 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
           subtotal: Number(invoice.subtotal),
           taxRate: Number(invoice.taxRate),
           taxAmount: Number(invoice.taxAmount),
-          total: Number(invoice.total)
+          total: Number(invoice.total),
+          date: new Date(invoice.date),
+          dueDate: new Date(invoice.dueDate),
+          createdAt: new Date(invoice.createdAt),
+          updatedAt: new Date(invoice.updatedAt)
         }));
         
         console.log("Formatted invoices after loading:", formattedInvoices);
@@ -68,6 +74,10 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
 
   const getInvoicesByCompany = (companyId: string) => {
     return invoices.filter(invoice => invoice.companyId === companyId);
+  };
+  
+  const getInvoice = (id: string) => {
+    return invoices.find(invoice => invoice.id === id);
   };
 
   const addInvoice = (invoiceData: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -118,6 +128,54 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
   };
+  
+  const updateInvoice = (id: string, invoiceData: Omit<Invoice, 'id' | 'createdAt'>) => {
+    if (!currentCompany) {
+      toast.error("No company selected. Please select or create a company first.");
+      throw new Error("No company selected");
+    }
+    
+    try {
+      console.log("Updating invoice with id", id, "and data:", invoiceData);
+      
+      if (!invoiceData.invoiceNumber) {
+        toast.error("Invoice number is required");
+        throw new Error("Invoice number is required");
+      }
+      
+      const formattedItems = invoiceData.items.map(item => ({
+        id: String(item.id),
+        description: String(item.description),
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }));
+      
+      const updatedInvoice: Invoice = {
+        ...invoiceData,
+        items: formattedItems,
+        id,
+        updatedAt: new Date()
+      };
+      
+      console.log("Updated invoice object:", updatedInvoice);
+      
+      setInvoices(prev => {
+        const updated = prev.map(invoice => 
+          invoice.id === id ? updatedInvoice : invoice
+        );
+        console.log("Updated invoices array:", updated);
+        return updated;
+      });
+      
+      toast.success(`Invoice ${invoiceData.invoiceNumber} updated`);
+      return updatedInvoice;
+    } catch (error) {
+      console.error("Error in updateInvoice:", error);
+      toast.error("Failed to update invoice. Please try again.");
+      throw error;
+    }
+  };
 
   const deleteInvoice = (id: string) => {
     const invoiceToDelete = invoices.find(invoice => invoice.id === id);
@@ -146,8 +204,10 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   const contextValue: InvoiceContextType = {
     invoices,
     addInvoice,
+    updateInvoice,
     deleteInvoice,
     getInvoicesByCompany,
+    getInvoice,
     calculateTotals,
     createEmptyInvoiceItem
   };

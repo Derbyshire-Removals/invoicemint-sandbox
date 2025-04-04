@@ -5,7 +5,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { PageTransition } from "../ui-custom/PageTransition";
 import { StatusBadge } from "../ui-custom/StatusBadge";
 import { format } from "date-fns";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft, Download, Printer, Pencil } from "lucide-react";
 import { useRef } from "react";
 import { printInvoice } from "@/utils/printUtils";
 
@@ -75,6 +75,10 @@ export function InvoiceDetail() {
     printInvoice(invoice, company);
   };
 
+  const handleEdit = () => {
+    navigate(`/invoices/${invoice.id}/edit`);
+  };
+
   return (
     <PageTransition>
       <div className="max-w-4xl mx-auto">
@@ -88,6 +92,10 @@ export function InvoiceDetail() {
             Back to Invoices
           </Button>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handleEdit}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
             <Button variant="outline" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Print
