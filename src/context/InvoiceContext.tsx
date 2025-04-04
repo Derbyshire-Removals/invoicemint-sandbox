@@ -7,8 +7,6 @@ import { toast } from "sonner";
 interface InvoiceContextType {
   invoices: Invoice[];
   addInvoice: (invoice: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => Invoice;
-  updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
-  updateInvoiceNumber: (id: string, invoiceNumber: string) => void;
   deleteInvoice: (id: string) => void;
   getInvoicesByCompany: (companyId: string) => Invoice[];
   calculateTotals: (items: InvoiceItem[], taxRate: number) => { 
@@ -121,54 +119,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateInvoice = (id: string, invoiceData: Partial<Invoice>) => {
-    console.log("Updating invoice with ID:", id, "Data:", invoiceData);
-    
-    let updatedData = { ...invoiceData };
-    
-    if (invoiceData.items) {
-      // Ensure all item properties are the correct types
-      updatedData.items = invoiceData.items.map(item => ({
-        id: String(item.id),
-        description: String(item.description),
-        quantity: Number(item.quantity),
-        unitPrice: Number(item.unitPrice),
-        total: Number(item.total)
-      }));
-      
-      console.log("Formatted items for update:", updatedData.items);
-    }
-    
-    setInvoices(prev => 
-      prev.map(invoice => {
-        if (invoice.id === id) {
-          const updated = { 
-            ...invoice, 
-            ...updatedData, 
-            updatedAt: new Date() 
-          };
-          console.log("Updated invoice in state:", updated);
-          return updated;
-        }
-        return invoice;
-      })
-    );
-    
-    toast.success("Invoice updated");
-  };
-
-  const updateInvoiceNumber = (id: string, invoiceNumber: string) => {
-    setInvoices(prev => 
-      prev.map(invoice => 
-        invoice.id === id 
-          ? { ...invoice, invoiceNumber, updatedAt: new Date() } 
-          : invoice
-      )
-    );
-    
-    toast.success("Invoice number updated");
-  };
-
   const deleteInvoice = (id: string) => {
     const invoiceToDelete = invoices.find(invoice => invoice.id === id);
     
@@ -196,8 +146,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   const contextValue: InvoiceContextType = {
     invoices,
     addInvoice,
-    updateInvoice,
-    updateInvoiceNumber,
     deleteInvoice,
     getInvoicesByCompany,
     calculateTotals,

@@ -5,7 +5,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { PageTransition } from "../ui-custom/PageTransition";
 import { StatusBadge } from "../ui-custom/StatusBadge";
 import { format } from "date-fns";
-import { ArrowLeft, Download, Edit, Printer } from "lucide-react";
+import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useRef } from "react";
 import { printInvoice } from "@/utils/printUtils";
 
@@ -95,10 +95,6 @@ export function InvoiceDetail() {
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
               Download
-            </Button>
-            <Button onClick={() => navigate(`/invoices/${invoice.id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
             </Button>
           </div>
         </div>
