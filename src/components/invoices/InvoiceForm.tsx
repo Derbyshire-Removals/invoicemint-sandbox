@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -37,6 +38,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
@@ -154,9 +156,10 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   }, [items, taxRate, calculateTotals, form]);
 
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
-    
     try {
+      setIsSubmitting(true);
+      console.log("Form submitted with data:", data);
+      
       const typedItems: InvoiceItem[] = data.items.map(item => ({
         id: item.id,
         description: item.description,
@@ -188,6 +191,8 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
           notes: data.notes,
           status: data.status
         });
+        
+        toast.success("Invoice updated successfully");
       } else {
         addInvoice({
           companyId: data.companyId,
@@ -207,9 +212,15 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
           notes: data.notes,
           status: data.status
         });
+        
+        toast.success("Invoice created successfully");
       }
       
+      // Navigate after successful operation
       navigate("/invoices");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to save invoice. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -659,7 +670,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isEditing ? "Update Invoice" : "Create Invoice"}
+                  {isSubmitting ? "Saving..." : isEditing ? "Update Invoice" : "Create Invoice"}
                 </Button>
               </CardFooter>
             </Card>
