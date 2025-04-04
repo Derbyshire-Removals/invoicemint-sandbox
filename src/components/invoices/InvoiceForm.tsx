@@ -106,9 +106,12 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
   // Generate a default invoice number for new invoices
   const generateDefaultInvoiceNumber = () => {
     if (isEditing && invoiceToEdit?.invoiceNumber) {
+      console.log("Using existing invoice number for editing:", invoiceToEdit.invoiceNumber);
       return invoiceToEdit.invoiceNumber;
     } else if (currentCompany) {
-      return `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
+      const newNumber = `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
+      console.log("Generating new invoice number:", newNumber);
+      return newNumber;
     } else {
       return "";
     }
@@ -132,11 +135,37 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     status: invoiceToEdit?.status || "draft",
   };
 
+  // Add debugging for initial form values
+  console.log("Setting up form with default values:", defaultValues);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues,
     mode: "onChange",
   });
+  
+  // Reset form when editing and the invoice changes
+  useEffect(() => {
+    if (isEditing && invoiceToEdit) {
+      console.log("Resetting form with invoice data:", invoiceToEdit);
+      form.reset({
+        companyId: invoiceToEdit.companyId,
+        invoiceNumber: invoiceToEdit.invoiceNumber,
+        date: new Date(invoiceToEdit.date),
+        dueDate: new Date(invoiceToEdit.dueDate),
+        customer: {
+          name: invoiceToEdit.customer.name,
+          address: invoiceToEdit.customer.address,
+          email: invoiceToEdit.customer.email || "",
+          phone: invoiceToEdit.customer.phone || "",
+        },
+        items: invoiceToEdit.items,
+        taxRate: invoiceToEdit.taxRate,
+        notes: invoiceToEdit.notes || "",
+        status: invoiceToEdit.status,
+      });
+    }
+  }, [invoiceToEdit, isEditing, form]);
   
   useEffect(() => {
     if (currentCompany && !form.getValues("companyId")) {
@@ -282,6 +311,10 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       </PageTransition>
     );
   }
+
+  // Add debugging for the current form values
+  const currentInvoiceNumber = form.watch("invoiceNumber");
+  console.log("Current invoice number in form:", currentInvoiceNumber);
 
   return (
     <PageTransition>
