@@ -26,10 +26,23 @@ const InvoiceFormPage = () => {
   useEffect(() => {
     if (id && invoices.length > 0) {
       const invoice = invoices.find(inv => inv.id === id);
-      setInvoiceToEdit(invoice);
       
-      // If invoice not found with this ID, redirect to invoices list
-      if (!invoice) {
+      // Make sure all item properties are properly set
+      if (invoice) {
+        // Ensure invoice items are properly formatted
+        const formattedItems = invoice.items.map(item => ({
+          ...item,
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+          total: Number(item.total)
+        }));
+        
+        setInvoiceToEdit({
+          ...invoice,
+          items: formattedItems
+        });
+      } else {
+        // If invoice not found with this ID, redirect to invoices list
         console.log(`Invoice with ID ${id} not found, redirecting`);
         navigate("/invoices");
       }

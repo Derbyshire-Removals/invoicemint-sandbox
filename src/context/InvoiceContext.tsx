@@ -72,8 +72,18 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
       // Still increment the counter to keep it moving forward
       incrementInvoiceCounter();
       
+      // Ensure items are properly formatted
+      const formattedItems = invoiceData.items.map(item => ({
+        id: item.id,
+        description: item.description,
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }));
+      
       const newInvoice: Invoice = {
         ...invoiceData,
+        items: formattedItems,
         id: Date.now().toString(),
         createdAt: new Date(),
         updatedAt: new Date()
@@ -97,10 +107,23 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateInvoice = (id: string, invoiceData: Partial<Invoice>) => {
+    // Ensure items are properly formatted if present
+    let updatedData = { ...invoiceData };
+    
+    if (invoiceData.items) {
+      updatedData.items = invoiceData.items.map(item => ({
+        id: item.id,
+        description: item.description,
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }));
+    }
+    
     setInvoices(prev => 
       prev.map(invoice => 
         invoice.id === id 
-          ? { ...invoice, ...invoiceData, updatedAt: new Date() } 
+          ? { ...invoice, ...updatedData, updatedAt: new Date() } 
           : invoice
       )
     );
@@ -108,7 +131,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Invoice updated");
   };
 
-  // Function to update invoice number specifically
   const updateInvoiceNumber = (id: string, invoiceNumber: string) => {
     setInvoices(prev => 
       prev.map(invoice => 

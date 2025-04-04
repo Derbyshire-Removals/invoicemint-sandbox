@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -40,7 +39,6 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-// Create a schema that includes invoice number for both creating and editing
 const formSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -103,7 +101,6 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     }
   };
 
-  // Generate a default invoice number for new invoices
   const generateDefaultInvoiceNumber = () => {
     if (isEditing && invoiceToEdit?.invoiceNumber) {
       console.log("Using existing invoice number for editing:", invoiceToEdit.invoiceNumber);
@@ -117,7 +114,18 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     }
   };
 
-  // Set up form values with the invoice number for both editing and creating
+  const defaultItems = isEditing && invoiceToEdit?.items ? 
+    invoiceToEdit.items.map(item => ({
+      id: item.id,
+      description: item.description || '',
+      quantity: Number(item.quantity) || 1,
+      unitPrice: Number(item.unitPrice) || 0,
+      total: Number(item.total) || 0
+    })) : 
+    [createEmptyInvoiceItem()];
+  
+  console.log("Default items for form:", defaultItems);
+  
   const defaultValues = {
     companyId: currentCompany?.id || "",
     invoiceNumber: generateDefaultInvoiceNumber(),
@@ -129,13 +137,12 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       email: invoiceToEdit?.customer.email || "",
       phone: invoiceToEdit?.customer.phone || "",
     },
-    items: invoiceToEdit?.items || [createEmptyInvoiceItem()],
+    items: defaultItems,
     taxRate: invoiceToEdit?.taxRate || 0,
     notes: invoiceToEdit?.notes || (currentCompany?.notes || ""),
     status: invoiceToEdit?.status || "draft",
   };
 
-  // Add debugging for initial form values
   console.log("Setting up form with default values:", defaultValues);
 
   const form = useForm({
@@ -144,10 +151,20 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     mode: "onChange",
   });
   
-  // Reset form when editing and the invoice changes
   useEffect(() => {
     if (isEditing && invoiceToEdit) {
       console.log("Resetting form with invoice data:", invoiceToEdit);
+      
+      const formattedItems = invoiceToEdit.items.map(item => ({
+        id: item.id,
+        description: item.description || '',
+        quantity: Number(item.quantity) || 1,
+        unitPrice: Number(item.unitPrice) || 0,
+        total: Number(item.total) || 0
+      }));
+      
+      console.log("Formatted items for form reset:", formattedItems);
+      
       form.reset({
         companyId: invoiceToEdit.companyId,
         invoiceNumber: invoiceToEdit.invoiceNumber,
@@ -159,13 +176,22 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
           email: invoiceToEdit.customer.email || "",
           phone: invoiceToEdit.customer.phone || "",
         },
-        items: invoiceToEdit.items,
+        items: formattedItems,
         taxRate: invoiceToEdit.taxRate,
         notes: invoiceToEdit.notes || "",
         status: invoiceToEdit.status,
       });
+      
+      setTimeout(() => {
+        const items = form.getValues("items");
+        const taxRate = form.getValues("taxRate");
+        const { subtotal, taxAmount, total } = calculateTotals(items, taxRate);
+        setSubtotal(subtotal);
+        setTaxAmount(taxAmount);
+        setTotal(total);
+      }, 0);
     }
-  }, [invoiceToEdit, isEditing, form]);
+  }, [invoiceToEdit, isEditing, form, calculateTotals]);
   
   useEffect(() => {
     if (currentCompany && !form.getValues("companyId")) {
@@ -219,7 +245,6 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       }));
       
       if (isEditing && invoiceToEdit) {
-        // For editing, check if the invoice number has changed
         if (data.invoiceNumber !== invoiceToEdit.invoiceNumber) {
           console.log("Updating invoice number from", invoiceToEdit.invoiceNumber, "to", data.invoiceNumber);
           updateInvoiceNumber(invoiceToEdit.id, data.invoiceNumber);
@@ -246,10 +271,9 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
         
         toast.success("Invoice updated successfully");
       } else {
-        // For creating new invoice, use the user-provided invoice number
         const invoiceData = {
           companyId: data.companyId,
-          invoiceNumber: data.invoiceNumber, // Use the user-entered invoice number
+          invoiceNumber: data.invoiceNumber,
           date: data.date,
           dueDate: data.dueDate,
           customer: {
@@ -273,7 +297,6 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
         toast.success(`Invoice ${newInvoice.invoiceNumber} created successfully`);
       }
       
-      // Add small delay before navigation to allow toast to be seen
       setTimeout(() => {
         navigate("/invoices");
       }, 1500);
@@ -312,7 +335,6 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     );
   }
 
-  // Add debugging for the current form values
   const currentInvoiceNumber = form.watch("invoiceNumber");
   console.log("Current invoice number in form:", currentInvoiceNumber);
 
@@ -339,7 +361,6 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
                   <CardTitle>Invoice Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Invoice Number field - now always visible */}
                   <FormField
                     control={form.control}
                     name="invoiceNumber"
