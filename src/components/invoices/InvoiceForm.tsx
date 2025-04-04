@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -216,8 +215,9 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
         toast.success("Invoice created successfully");
       }
       
-      // Navigate after successful operation
-      navigate("/invoices");
+      setTimeout(() => {
+        navigate("/invoices");
+      }, 500);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to save invoice. Please try again.");
@@ -669,7 +669,10 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Saving..." : isEditing ? "Update Invoice" : "Create Invoice"}
                 </Button>
               </CardFooter>
