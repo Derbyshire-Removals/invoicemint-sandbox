@@ -120,6 +120,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
+    mode: "onChange",
   });
   
   useEffect(() => {
@@ -155,9 +156,15 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   }, [items, taxRate, calculateTotals, form]);
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submitted with data:", data);
+    
+    if (!currentCompany) {
+      toast.error("No company selected. Please select or create a company first.");
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
-      console.log("Form submitted with data:", data);
       
       const typedItems: InvoiceItem[] = data.items.map(item => ({
         id: item.id,
@@ -193,7 +200,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
         
         toast.success("Invoice updated successfully");
       } else {
-        addInvoice({
+        const invoiceData = {
           companyId: data.companyId,
           date: data.date,
           dueDate: data.dueDate,
@@ -208,16 +215,20 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
           taxRate: data.taxRate,
           taxAmount,
           total,
-          notes: data.notes,
+          notes: data.notes || "",
           status: data.status
-        });
+        };
+        
+        console.log("Sending invoice data to be added:", invoiceData);
+        const newInvoice = addInvoice(invoiceData);
+        console.log("New invoice created:", newInvoice);
         
         toast.success("Invoice created successfully");
       }
       
       setTimeout(() => {
         navigate("/invoices");
-      }, 500);
+      }, 1000);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to save invoice. Please try again.");

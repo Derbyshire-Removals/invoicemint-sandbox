@@ -45,21 +45,37 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    // Generate invoice number
-    const invoiceNumber = `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
-    
-    const newInvoice: Invoice = {
-      ...invoiceData,
-      id: Date.now().toString(),
-      invoiceNumber,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    setInvoices(prev => [...prev, newInvoice]);
-    incrementInvoiceCounter();
-    
-    toast.success(`Invoice ${invoiceNumber} created`);
+    try {
+      console.log("Adding invoice with data:", invoiceData);
+      
+      // Generate invoice number
+      const invoiceNumber = `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
+      
+      const newInvoice: Invoice = {
+        ...invoiceData,
+        id: Date.now().toString(),
+        invoiceNumber,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      console.log("Created new invoice:", newInvoice);
+      
+      setInvoices(prev => {
+        const updated = [...prev, newInvoice];
+        console.log("Updated invoices array:", updated);
+        return updated;
+      });
+      
+      incrementInvoiceCounter();
+      
+      toast.success(`Invoice ${invoiceNumber} created`);
+      return newInvoice;
+    } catch (error) {
+      console.error("Error in addInvoice:", error);
+      toast.error("Failed to create invoice. Please try again.");
+      throw error;
+    }
   };
 
   const updateInvoice = (id: string, invoiceData: Partial<Invoice>) => {
