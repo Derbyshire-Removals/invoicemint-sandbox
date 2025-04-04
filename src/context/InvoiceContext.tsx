@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Invoice, InvoiceItem } from '@/types';
 import { useCompany } from './CompanyContext';
@@ -6,7 +5,7 @@ import { toast } from "sonner";
 
 interface InvoiceContextType {
   invoices: Invoice[];
-  addInvoice: (invoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => Invoice;
+  addInvoice: (invoice: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => Invoice;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
   updateInvoiceNumber: (id: string, invoiceNumber: string) => void;
   deleteInvoice: (id: string) => void;
@@ -54,7 +53,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     return invoices.filter(invoice => invoice.companyId === companyId);
   };
 
-  const addInvoice = (invoiceData: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => {
+  const addInvoice = (invoiceData: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!currentCompany) {
       toast.error("No company selected. Please select or create a company first.");
       throw new Error("No company selected");
@@ -63,14 +62,19 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Adding invoice with data:", invoiceData);
       
-      // Generate invoice number
-      const invoiceNumber = `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
-      console.log("Generated invoice number:", invoiceNumber);
+      // User will now provide the invoice number
+      // If no invoice number is provided in the data, still increment the counter
+      if (!invoiceData.invoiceNumber) {
+        toast.error("Invoice number is required");
+        throw new Error("Invoice number is required");
+      }
+      
+      // Still increment the counter to keep it moving forward
+      incrementInvoiceCounter();
       
       const newInvoice: Invoice = {
         ...invoiceData,
         id: Date.now().toString(),
-        invoiceNumber,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -83,9 +87,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         return updated;
       });
       
-      incrementInvoiceCounter();
-      
-      toast.success(`Invoice ${invoiceNumber} created`);
+      toast.success(`Invoice ${invoiceData.invoiceNumber} created`);
       return newInvoice;
     } catch (error) {
       console.error("Error in addInvoice:", error);
@@ -106,7 +108,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Invoice updated");
   };
 
-  // New function to update invoice number specifically
+  // Function to update invoice number specifically
   const updateInvoiceNumber = (id: string, invoiceNumber: string) => {
     setInvoices(prev => 
       prev.map(invoice => 

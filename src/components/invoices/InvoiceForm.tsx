@@ -40,8 +40,8 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-// Create a separate schema for editing (which requires invoice number)
-const editFormSchema = z.object({
+// Create a schema that includes invoice number for both creating and editing
+const formSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   date: z.date({
@@ -70,11 +70,7 @@ const editFormSchema = z.object({
   status: z.enum(["draft", "sent", "paid", "overdue"]),
 });
 
-// Create schema for creating (no invoice number required)
-const createFormSchema = editFormSchema.omit({ invoiceNumber: true });
-
-type EditFormValues = z.infer<typeof editFormSchema>;
-type CreateFormValues = z.infer<typeof createFormSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface InvoiceFormProps {
   invoiceToEdit?: Invoice;
@@ -107,10 +103,21 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     }
   };
 
-  // Set up form values conditionally based on whether we're editing or creating
+  // Generate a default invoice number for new invoices
+  const generateDefaultInvoiceNumber = () => {
+    if (isEditing && invoiceToEdit?.invoiceNumber) {
+      return invoiceToEdit.invoiceNumber;
+    } else if (currentCompany) {
+      return `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
+    } else {
+      return "";
+    }
+  };
+
+  // Set up form values with the invoice number for both editing and creating
   const defaultValues = {
     companyId: currentCompany?.id || "",
-    ...(isEditing && { invoiceNumber: invoiceToEdit?.invoiceNumber || "" }),
+    invoiceNumber: generateDefaultInvoiceNumber(),
     date: invoiceToEdit?.date ? new Date(invoiceToEdit.date) : defaultDate,
     dueDate: getDefaultDueDate(),
     customer: {
@@ -125,12 +132,9 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     status: invoiceToEdit?.status || "draft",
   };
 
-  // Choose the appropriate form schema
-  const formSchema = isEditing ? editFormSchema : createFormSchema;
-  
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultValues as any,
+    defaultValues: defaultValues,
     mode: "onChange",
   });
   
@@ -166,7 +170,7 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     setTotal(total);
   }, [items, taxRate, calculateTotals, form]);
 
-  const onSubmit = async (data: EditFormValues | CreateFormValues) => {
+  const onSubmit = async (data: FormValues) => {
     console.log("Form submitted with data:", data);
     
     if (!currentCompany) {
@@ -186,52 +190,52 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       }));
       
       if (isEditing && invoiceToEdit) {
-        const editData = data as EditFormValues;
-        
-        if (editData.invoiceNumber !== invoiceToEdit.invoiceNumber) {
-          updateInvoiceNumber(invoiceToEdit.id, editData.invoiceNumber);
+        // For editing, check if the invoice number has changed
+        if (data.invoiceNumber !== invoiceToEdit.invoiceNumber) {
+          console.log("Updating invoice number from", invoiceToEdit.invoiceNumber, "to", data.invoiceNumber);
+          updateInvoiceNumber(invoiceToEdit.id, data.invoiceNumber);
         }
         
         updateInvoice(invoiceToEdit.id, {
-          companyId: editData.companyId,
-          date: editData.date,
-          dueDate: editData.dueDate,
+          companyId: data.companyId,
+          date: data.date,
+          dueDate: data.dueDate,
           customer: {
-            name: editData.customer.name,
-            address: editData.customer.address,
-            email: editData.customer.email || "",
-            phone: editData.customer.phone || ""
+            name: data.customer.name,
+            address: data.customer.address,
+            email: data.customer.email || "",
+            phone: data.customer.phone || ""
           },
           items: typedItems,
           subtotal,
-          taxRate: editData.taxRate,
+          taxRate: data.taxRate,
           taxAmount,
           total,
-          notes: editData.notes,
-          status: editData.status
+          notes: data.notes,
+          status: data.status
         });
         
         toast.success("Invoice updated successfully");
       } else {
-        const createData = data as CreateFormValues;
-        
+        // For creating new invoice, use the user-provided invoice number
         const invoiceData = {
-          companyId: createData.companyId,
-          date: createData.date,
-          dueDate: createData.dueDate,
+          companyId: data.companyId,
+          invoiceNumber: data.invoiceNumber, // Use the user-entered invoice number
+          date: data.date,
+          dueDate: data.dueDate,
           customer: {
-            name: createData.customer.name,
-            address: createData.customer.address,
-            email: createData.customer.email || "",
-            phone: createData.customer.phone || ""
+            name: data.customer.name,
+            address: data.customer.address,
+            email: data.customer.email || "",
+            phone: data.customer.phone || ""
           },
           items: typedItems,
           subtotal,
-          taxRate: createData.taxRate,
+          taxRate: data.taxRate,
           taxAmount,
           total,
-          notes: createData.notes || "",
-          status: createData.status
+          notes: data.notes || "",
+          status: data.status
         };
         
         console.log("Sending invoice data to be added:", invoiceData);
@@ -302,21 +306,20 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
                   <CardTitle>Invoice Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {isEditing && (
-                    <FormField
-                      control={form.control}
-                      name="invoiceNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Invoice Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                  {/* Invoice Number field - now always visible */}
+                  <FormField
+                    control={form.control}
+                    name="invoiceNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Invoice Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
