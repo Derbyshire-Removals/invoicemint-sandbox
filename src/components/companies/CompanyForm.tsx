@@ -227,11 +227,10 @@ export function CompanyForm({ companyToEdit, onSuccess }: CompanyFormProps) {
           />
 
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="submit" disabled={isSubmitting}>
-                {isEditing ? "Update Company" : "Add Company"}
-              </Button>
-            </DialogClose>
+            {/* Remove DialogClose wrapper around the button to allow form submission to complete */}
+            <Button type="submit" disabled={isSubmitting}>
+              {isEditing ? "Update Company" : "Add Company"}
+            </Button>
           </DialogFooter>
         </form>
       </Form>

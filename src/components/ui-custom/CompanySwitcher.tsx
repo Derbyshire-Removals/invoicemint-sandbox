@@ -39,6 +39,15 @@ export function CompanySwitcher() {
     }
   };
 
+  // Function to handle success after adding a company
+  const handleCompanyAdded = () => {
+    setShowNewCompanyDialog(false);
+    // Navigate to dashboard after company is created
+    if (location.pathname !== "/") {
+      navigate("/");
+    }
+  };
+
   if (!companies.length) {
     return (
       <Dialog open={showNewCompanyDialog} onOpenChange={setShowNewCompanyDialog}>
@@ -48,7 +57,7 @@ export function CompanySwitcher() {
             <PlusCircle className="ml-2 h-4 w-4" />
           </Button>
         </DialogTrigger>
-        <CompanyForm onSuccess={() => setShowNewCompanyDialog(false)} />
+        <CompanyForm onSuccess={handleCompanyAdded} />
       </Dialog>
     );
   }
@@ -107,7 +116,7 @@ export function CompanySwitcher() {
           </Command>
         </PopoverContent>
       </Popover>
-      <CompanyForm onSuccess={() => setShowNewCompanyDialog(false)} />
+      <CompanyForm onSuccess={handleCompanyAdded} />
     </Dialog>
   );
 }
