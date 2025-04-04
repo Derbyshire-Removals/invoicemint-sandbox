@@ -220,15 +220,13 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
         };
         
         console.log("Sending invoice data to be added:", invoiceData);
-        const newInvoice = addInvoice(invoiceData);
-        console.log("New invoice created:", newInvoice);
-        
+        addInvoice(invoiceData);
         toast.success("Invoice created successfully");
       }
       
       setTimeout(() => {
         navigate("/invoices");
-      }, 1000);
+      }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to save invoice. Please try again.");
@@ -683,6 +681,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
+                  onClick={() => console.log("Submit button clicked", form.formState)}
                 >
                   {isSubmitting ? "Saving..." : isEditing ? "Update Invoice" : "Create Invoice"}
                 </Button>

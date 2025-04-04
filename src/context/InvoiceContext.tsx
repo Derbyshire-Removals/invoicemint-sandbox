@@ -19,20 +19,35 @@ interface InvoiceContextType {
   createEmptyInvoiceItem: () => InvoiceItem;
 }
 
+// Create context with a default value
 const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
 
 export function InvoiceProvider({ children }: { children: React.ReactNode }) {
+  // Debug whether the provider is rendering
+  console.log("InvoiceProvider rendering");
+  
   const { currentCompany, incrementInvoiceCounter } = useCompany();
   
   // Load invoices from localStorage or initialize with empty array
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const savedInvoices = localStorage.getItem('invoices');
-    return savedInvoices ? JSON.parse(savedInvoices) : [];
+    try {
+      const savedInvoices = localStorage.getItem('invoices');
+      console.log("Loading invoices from localStorage:", savedInvoices);
+      return savedInvoices ? JSON.parse(savedInvoices) : [];
+    } catch (error) {
+      console.error("Error loading invoices from localStorage:", error);
+      return [];
+    }
   });
 
   // Save invoices to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('invoices', JSON.stringify(invoices));
+    try {
+      console.log("Saving invoices to localStorage:", invoices);
+      localStorage.setItem('invoices', JSON.stringify(invoices));
+    } catch (error) {
+      console.error("Error saving invoices to localStorage:", error);
+    }
   }, [invoices]);
 
   const getInvoicesByCompany = (companyId: string) => {
@@ -128,19 +143,20 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     total: 0
   });
 
+  // Create the context value object
+  const contextValue: InvoiceContextType = {
+    invoices,
+    addInvoice,
+    updateInvoice,
+    updateInvoiceNumber,
+    deleteInvoice,
+    getInvoicesByCompany,
+    calculateTotals,
+    createEmptyInvoiceItem
+  };
+
   return (
-    <InvoiceContext.Provider
-      value={{
-        invoices,
-        addInvoice,
-        updateInvoice,
-        updateInvoiceNumber,
-        deleteInvoice,
-        getInvoicesByCompany,
-        calculateTotals,
-        createEmptyInvoiceItem
-      }}
-    >
+    <InvoiceContext.Provider value={contextValue}>
       {children}
     </InvoiceContext.Provider>
   );

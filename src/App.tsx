@@ -16,32 +16,42 @@ import InvoiceFormPage from "./pages/InvoiceFormPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <CompanyProvider>
-        <InvoiceProvider>
-          <BrowserRouter>
-            <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/invoices" element={<InvoicesPage />} />
-                <Route path="/invoices/new" element={<InvoiceFormPage />} />
-                <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
-                <Route path="/invoices/:id/edit" element={<InvoiceFormPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AnimatePresence>
-          </BrowserRouter>
-          <Toaster />
-          <Sonner position="top-right" />
-        </InvoiceProvider>
-      </CompanyProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log("App component rendering");
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <CompanyProvider>
+          <InvoiceProvider>
+            <BrowserRouter>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/invoices" element={<InvoicesPage />} />
+                  <Route path="/invoices/new" element={<InvoiceFormPage />} />
+                  <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+                  <Route path="/invoices/:id/edit" element={<InvoiceFormPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AnimatePresence>
+            </BrowserRouter>
+            <Toaster />
+            <Sonner position="top-right" />
+          </InvoiceProvider>
+        </CompanyProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
