@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Invoice, InvoiceItem } from '@/types';
 import { useCompany } from './CompanyContext';
@@ -36,8 +37,8 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         const formattedInvoices = parsed.map((invoice: any) => ({
           ...invoice,
           items: invoice.items.map((item: any) => ({
-            id: item.id,
-            description: item.description || '',
+            id: String(item.id),
+            description: String(item.description || ''),
             quantity: Number(item.quantity),
             unitPrice: Number(item.unitPrice),
             total: Number(item.total)
@@ -88,8 +89,8 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
       incrementInvoiceCounter();
       
       const formattedItems = invoiceData.items.map(item => ({
-        id: item.id,
-        description: item.description,
+        id: String(item.id),
+        description: String(item.description),
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
         total: Number(item.total)
@@ -126,9 +127,10 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     let updatedData = { ...invoiceData };
     
     if (invoiceData.items) {
+      // Ensure all item properties are the correct types
       updatedData.items = invoiceData.items.map(item => ({
-        id: item.id,
-        description: item.description,
+        id: String(item.id),
+        description: String(item.description),
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
         total: Number(item.total)
@@ -138,11 +140,18 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     }
     
     setInvoices(prev => 
-      prev.map(invoice => 
-        invoice.id === id 
-          ? { ...invoice, ...updatedData, updatedAt: new Date() } 
-          : invoice
-      )
+      prev.map(invoice => {
+        if (invoice.id === id) {
+          const updated = { 
+            ...invoice, 
+            ...updatedData, 
+            updatedAt: new Date() 
+          };
+          console.log("Updated invoice in state:", updated);
+          return updated;
+        }
+        return invoice;
+      })
     );
     
     toast.success("Invoice updated");

@@ -30,14 +30,14 @@ const InvoiceFormPage = () => {
       if (invoice) {
         console.log("Found invoice to edit:", invoice);
         
-        // Deep copy and explicitly convert each property to ensure correct types
+        // Create a fully new object with properly typed values for each property
         const formattedItems: InvoiceItem[] = invoice.items.map(item => {
-          // Log each item before processing to help debug
-          console.log("Processing item:", JSON.stringify(item));
+          // Log each item to help debug
+          console.log("Processing item:", item);
           
           return {
-            id: item.id,
-            description: item.description || '',
+            id: String(item.id),
+            description: String(item.description || ''),
             quantity: Number(item.quantity),
             unitPrice: Number(item.unitPrice),
             total: Number(item.total)
@@ -46,13 +46,30 @@ const InvoiceFormPage = () => {
         
         console.log("Formatted items for edit:", formattedItems);
         
-        // Create a new object with properly formatted data
+        // Create a deep clone of the invoice with formatted data
         const formattedInvoice: Invoice = {
           ...invoice,
-          items: formattedItems
+          companyId: String(invoice.companyId),
+          invoiceNumber: String(invoice.invoiceNumber),
+          date: new Date(invoice.date),
+          dueDate: new Date(invoice.dueDate),
+          customer: {
+            name: String(invoice.customer.name),
+            address: String(invoice.customer.address),
+            email: String(invoice.customer.email || ''),
+            phone: String(invoice.customer.phone || '')
+          },
+          items: formattedItems,
+          subtotal: Number(invoice.subtotal),
+          taxRate: Number(invoice.taxRate),
+          taxAmount: Number(invoice.taxAmount),
+          total: Number(invoice.total),
+          status: invoice.status,
+          createdAt: new Date(invoice.createdAt),
+          updatedAt: new Date(invoice.updatedAt)
         };
         
-        console.log("Setting invoiceToEdit with formatted data:", formattedInvoice);
+        console.log("Setting invoiceToEdit with fully formatted data:", formattedInvoice);
         setInvoiceToEdit(formattedInvoice);
       } else {
         // If invoice not found with this ID, redirect to invoices list

@@ -77,6 +77,7 @@ interface InvoiceFormProps {
 
 export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormProps) {
   console.log("InvoiceForm rendering", { invoiceToEdit, isEditing });
+  console.log("Items received in form:", JSON.stringify(invoiceToEdit?.items));
   
   const navigate = useNavigate();
   const { currentCompany } = useCompany();
@@ -114,18 +115,18 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     }
   };
 
-  const defaultItems = isEditing && invoiceToEdit?.items ? 
-    invoiceToEdit.items.map(item => {
-      console.log("Item for defaultItems:", JSON.stringify(item));
-      return {
-        id: item.id,
-        description: item.description || '',
-        quantity: Number(item.quantity) || 1,
-        unitPrice: Number(item.unitPrice) || 0,
-        total: Number(item.total) || 0
-      };
-    }) : 
-    [createEmptyInvoiceItem()];
+  let defaultItems: InvoiceItem[] = [createEmptyInvoiceItem()];
+  
+  if (isEditing && invoiceToEdit?.items && Array.isArray(invoiceToEdit.items) && invoiceToEdit.items.length > 0) {
+    console.log("Setting up default items from invoiceToEdit:", invoiceToEdit.items);
+    defaultItems = invoiceToEdit.items.map(item => ({
+      id: String(item.id),
+      description: String(item.description || ''),
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.unitPrice),
+      total: Number(item.total)
+    }));
+  }
   
   console.log("Default items for form:", defaultItems);
   
@@ -147,6 +148,7 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
   };
 
   console.log("Setting up form with default values:", defaultValues);
+  console.log("Default items being set:", JSON.stringify(defaultValues.items));
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -159,50 +161,47 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       console.log("Resetting form with invoice data:", invoiceToEdit);
       console.log("Items to reset form with:", JSON.stringify(invoiceToEdit.items));
       
-      const formattedItems = invoiceToEdit.items.map(item => {
-        console.log("Item before formatting:", JSON.stringify(item));
-        return {
-          id: item.id,
-          description: item.description || '',
-          quantity: Number(item.quantity) || 1,
-          unitPrice: Number(item.unitPrice) || 0,
-          total: Number(item.total) || 0
-        };
-      });
+      const formattedItems = invoiceToEdit.items.map(item => ({
+        id: String(item.id),
+        description: String(item.description || ''),
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }));
       
       console.log("Formatted items for form reset:", formattedItems);
       
       form.reset({
-        companyId: invoiceToEdit.companyId,
-        invoiceNumber: invoiceToEdit.invoiceNumber,
+        companyId: String(invoiceToEdit.companyId),
+        invoiceNumber: String(invoiceToEdit.invoiceNumber),
         date: new Date(invoiceToEdit.date),
         dueDate: new Date(invoiceToEdit.dueDate),
         customer: {
-          name: invoiceToEdit.customer.name,
-          address: invoiceToEdit.customer.address,
-          email: invoiceToEdit.customer.email || "",
-          phone: invoiceToEdit.customer.phone || "",
+          name: String(invoiceToEdit.customer.name),
+          address: String(invoiceToEdit.customer.address),
+          email: String(invoiceToEdit.customer.email || ""),
+          phone: String(invoiceToEdit.customer.phone || ""),
         },
         items: formattedItems,
-        taxRate: invoiceToEdit.taxRate,
-        notes: invoiceToEdit.notes || "",
+        taxRate: Number(invoiceToEdit.taxRate),
+        notes: String(invoiceToEdit.notes || ""),
         status: invoiceToEdit.status,
       }, { keepDirty: false, keepTouched: false });
       
       setTimeout(() => {
-        const items = form.getValues("items");
-        const taxRate = form.getValues("taxRate");
-        console.log("Items after form reset:", items);
+        const formItems = form.getValues("items");
+        const formTaxRate = form.getValues("taxRate");
+        console.log("Items after form reset:", formItems);
         
-        if (items && items.length > 0) {
-          const { subtotal, taxAmount, total } = calculateTotals(items, taxRate);
+        if (formItems && formItems.length > 0) {
+          const { subtotal, taxAmount, total } = calculateTotals(formItems, formTaxRate);
           setSubtotal(subtotal);
           setTaxAmount(taxAmount);
           setTotal(total);
         } else {
           console.error("Items array is empty or undefined after form reset");
         }
-      }, 200);
+      }, 300);
     }
   }, [invoiceToEdit, isEditing, form, calculateTotals]);
   
