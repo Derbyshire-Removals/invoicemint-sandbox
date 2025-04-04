@@ -27,15 +27,19 @@ const InvoiceFormPage = () => {
     if (id && invoices.length > 0) {
       const invoice = invoices.find(inv => inv.id === id);
       
-      // Make sure all item properties are properly set
       if (invoice) {
-        // Ensure invoice items are properly formatted
+        console.log("Found invoice to edit:", invoice);
+        
+        // Ensure invoice items are properly formatted with correct number types
         const formattedItems = invoice.items.map(item => ({
-          ...item,
+          id: item.id,
+          description: item.description || '',
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
           total: Number(item.total)
         }));
+        
+        console.log("Formatted items for edit:", formattedItems);
         
         setInvoiceToEdit({
           ...invoice,

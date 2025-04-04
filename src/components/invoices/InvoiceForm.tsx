@@ -155,13 +155,16 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
     if (isEditing && invoiceToEdit) {
       console.log("Resetting form with invoice data:", invoiceToEdit);
       
-      const formattedItems = invoiceToEdit.items.map(item => ({
-        id: item.id,
-        description: item.description || '',
-        quantity: Number(item.quantity) || 1,
-        unitPrice: Number(item.unitPrice) || 0,
-        total: Number(item.total) || 0
-      }));
+      const formattedItems = invoiceToEdit.items.map(item => {
+        console.log("Item before formatting:", item);
+        return {
+          id: item.id,
+          description: item.description || '',
+          quantity: Number(item.quantity) || 1,
+          unitPrice: Number(item.unitPrice) || 0,
+          total: Number(item.total) || 0
+        };
+      });
       
       console.log("Formatted items for form reset:", formattedItems);
       
@@ -185,11 +188,12 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
       setTimeout(() => {
         const items = form.getValues("items");
         const taxRate = form.getValues("taxRate");
+        console.log("Items after form reset:", items);
         const { subtotal, taxAmount, total } = calculateTotals(items, taxRate);
         setSubtotal(subtotal);
         setTaxAmount(taxAmount);
         setTotal(total);
-      }, 0);
+      }, 100);
     }
   }, [invoiceToEdit, isEditing, form, calculateTotals]);
   

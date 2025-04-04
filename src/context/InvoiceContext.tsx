@@ -18,16 +18,13 @@ interface InvoiceContextType {
   createEmptyInvoiceItem: () => InvoiceItem;
 }
 
-// Create context with a default value
 const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
 
 export function InvoiceProvider({ children }: { children: React.ReactNode }) {
-  // Debug whether the provider is rendering
   console.log("InvoiceProvider rendering");
   
   const { currentCompany, incrementInvoiceCounter } = useCompany();
   
-  // Load invoices from localStorage or initialize with empty array
   const [invoices, setInvoices] = useState<Invoice[]>(() => {
     try {
       const savedInvoices = localStorage.getItem('invoices');
@@ -39,7 +36,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  // Save invoices to localStorage whenever they change
   useEffect(() => {
     try {
       console.log("Saving invoices to localStorage:", invoices);
@@ -62,17 +58,13 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Adding invoice with data:", invoiceData);
       
-      // User will now provide the invoice number
-      // If no invoice number is provided in the data, still increment the counter
       if (!invoiceData.invoiceNumber) {
         toast.error("Invoice number is required");
         throw new Error("Invoice number is required");
       }
       
-      // Still increment the counter to keep it moving forward
       incrementInvoiceCounter();
       
-      // Ensure items are properly formatted
       const formattedItems = invoiceData.items.map(item => ({
         id: item.id,
         description: item.description,
@@ -107,7 +99,8 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateInvoice = (id: string, invoiceData: Partial<Invoice>) => {
-    // Ensure items are properly formatted if present
+    console.log("Updating invoice with ID:", id, "Data:", invoiceData);
+    
     let updatedData = { ...invoiceData };
     
     if (invoiceData.items) {
@@ -118,6 +111,8 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         unitPrice: Number(item.unitPrice),
         total: Number(item.total)
       }));
+      
+      console.log("Formatted items for update:", updatedData.items);
     }
     
     setInvoices(prev => 
@@ -144,7 +139,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteInvoice = (id: string) => {
-    // Get the invoice number before deletion
     const invoiceToDelete = invoices.find(invoice => invoice.id === id);
     
     setInvoices(prev => prev.filter(invoice => invoice.id !== id));
@@ -168,7 +162,6 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     total: 0
   });
 
-  // Create the context value object
   const contextValue: InvoiceContextType = {
     invoices,
     addInvoice,
