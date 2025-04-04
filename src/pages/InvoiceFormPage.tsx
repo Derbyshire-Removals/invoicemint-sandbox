@@ -13,6 +13,7 @@ const InvoiceFormPage = () => {
   const { currentCompany } = useCompany();
   const navigate = useNavigate();
   const [invoiceToEdit, setInvoiceToEdit] = useState<Invoice | undefined>(undefined);
+  const isEditing = !!id;
   
   // If no company is selected, redirect to settings
   useEffect(() => {
@@ -26,15 +27,24 @@ const InvoiceFormPage = () => {
     if (id && invoices.length > 0) {
       const invoice = invoices.find(inv => inv.id === id);
       setInvoiceToEdit(invoice);
+      
+      // If invoice not found with this ID, redirect to invoices list
+      if (!invoice) {
+        console.log(`Invoice with ID ${id} not found, redirecting`);
+        navigate("/invoices");
+      }
     }
-  }, [id, invoices]);
+  }, [id, invoices, navigate]);
 
   // Add debugging to see if this component is rendering properly
-  console.log("InvoiceFormPage rendering", { id, invoiceToEdit, currentCompany });
+  console.log("InvoiceFormPage rendering", { id, invoiceToEdit, currentCompany, isEditing });
 
   return (
     <AppLayout>
-      <InvoiceForm invoiceToEdit={invoiceToEdit} />
+      <InvoiceForm 
+        invoiceToEdit={invoiceToEdit} 
+        isEditing={isEditing} 
+      />
     </AppLayout>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -39,7 +40,8 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-const formSchema = z.object({
+// Create a separate schema for editing (which requires invoice number)
+const editFormSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   date: z.date({
@@ -68,13 +70,20 @@ const formSchema = z.object({
   status: z.enum(["draft", "sent", "paid", "overdue"]),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+// Create schema for creating (no invoice number required)
+const createFormSchema = editFormSchema.omit({ invoiceNumber: true });
+
+type EditFormValues = z.infer<typeof editFormSchema>;
+type CreateFormValues = z.infer<typeof createFormSchema>;
 
 interface InvoiceFormProps {
   invoiceToEdit?: Invoice;
+  isEditing?: boolean;
 }
 
-export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
+export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormProps) {
+  console.log("InvoiceForm rendering", { invoiceToEdit, isEditing });
+  
   const navigate = useNavigate();
   const { currentCompany } = useCompany();
   const { addInvoice, updateInvoice, updateInvoiceNumber, calculateTotals, createEmptyInvoiceItem } = useInvoice();
@@ -83,8 +92,6 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
   const [subtotal, setSubtotal] = useState(0);
   const [taxAmount, setTaxAmount] = useState(0);
   const [total, setTotal] = useState(0);
-  
-  const isEditing = !!invoiceToEdit;
 
   const currencySymbol = currentCompany?.currency || "£";
 
@@ -100,9 +107,10 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     }
   };
 
-  const defaultValues: FormValues = {
+  // Set up form values conditionally based on whether we're editing or creating
+  const defaultValues = {
     companyId: currentCompany?.id || "",
-    invoiceNumber: invoiceToEdit?.invoiceNumber || "",
+    ...(isEditing && { invoiceNumber: invoiceToEdit?.invoiceNumber || "" }),
     date: invoiceToEdit?.date ? new Date(invoiceToEdit.date) : defaultDate,
     dueDate: getDefaultDueDate(),
     customer: {
@@ -117,9 +125,12 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     status: invoiceToEdit?.status || "draft",
   };
 
-  const form = useForm<FormValues>({
+  // Choose the appropriate form schema
+  const formSchema = isEditing ? editFormSchema : createFormSchema;
+  
+  const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: defaultValues as any,
     mode: "onChange",
   });
   
@@ -155,7 +166,7 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
     setTotal(total);
   }, [items, taxRate, calculateTotals, form]);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: EditFormValues | CreateFormValues) => {
     console.log("Form submitted with data:", data);
     
     if (!currentCompany) {
@@ -175,62 +186,67 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
       }));
       
       if (isEditing && invoiceToEdit) {
-        if (data.invoiceNumber !== invoiceToEdit.invoiceNumber) {
-          updateInvoiceNumber(invoiceToEdit.id, data.invoiceNumber);
+        const editData = data as EditFormValues;
+        
+        if (editData.invoiceNumber !== invoiceToEdit.invoiceNumber) {
+          updateInvoiceNumber(invoiceToEdit.id, editData.invoiceNumber);
         }
         
         updateInvoice(invoiceToEdit.id, {
-          companyId: data.companyId,
-          date: data.date,
-          dueDate: data.dueDate,
+          companyId: editData.companyId,
+          date: editData.date,
+          dueDate: editData.dueDate,
           customer: {
-            name: data.customer.name,
-            address: data.customer.address,
-            email: data.customer.email || "",
-            phone: data.customer.phone || ""
+            name: editData.customer.name,
+            address: editData.customer.address,
+            email: editData.customer.email || "",
+            phone: editData.customer.phone || ""
           },
           items: typedItems,
           subtotal,
-          taxRate: data.taxRate,
+          taxRate: editData.taxRate,
           taxAmount,
           total,
-          notes: data.notes,
-          status: data.status
+          notes: editData.notes,
+          status: editData.status
         });
         
         toast.success("Invoice updated successfully");
       } else {
+        const createData = data as CreateFormValues;
+        
         const invoiceData = {
-          companyId: data.companyId,
-          date: data.date,
-          dueDate: data.dueDate,
+          companyId: createData.companyId,
+          date: createData.date,
+          dueDate: createData.dueDate,
           customer: {
-            name: data.customer.name,
-            address: data.customer.address,
-            email: data.customer.email || "",
-            phone: data.customer.phone || ""
+            name: createData.customer.name,
+            address: createData.customer.address,
+            email: createData.customer.email || "",
+            phone: createData.customer.phone || ""
           },
           items: typedItems,
           subtotal,
-          taxRate: data.taxRate,
+          taxRate: createData.taxRate,
           taxAmount,
           total,
-          notes: data.notes || "",
-          status: data.status
+          notes: createData.notes || "",
+          status: createData.status
         };
         
         console.log("Sending invoice data to be added:", invoiceData);
-        addInvoice(invoiceData);
-        toast.success("Invoice created successfully");
+        const newInvoice = addInvoice(invoiceData);
+        console.log("New invoice created:", newInvoice);
+        toast.success(`Invoice ${newInvoice.invoiceNumber} created successfully`);
       }
       
+      // Add small delay before navigation to allow toast to be seen
       setTimeout(() => {
         navigate("/invoices");
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Failed to save invoice. Please try again.");
-    } finally {
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsSubmitting(false);
     }
   };
@@ -681,7 +697,13 @@ export function InvoiceForm({ invoiceToEdit }: InvoiceFormProps) {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  onClick={() => console.log("Submit button clicked", form.formState)}
+                  onClick={() => {
+                    console.log("Submit button clicked", {
+                      formState: form.formState,
+                      isValid: form.formState.isValid,
+                      errors: form.formState.errors
+                    });
+                  }}
                 >
                   {isSubmitting ? "Saving..." : isEditing ? "Update Invoice" : "Create Invoice"}
                 </Button>

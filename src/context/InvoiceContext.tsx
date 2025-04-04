@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 interface InvoiceContextType {
   invoices: Invoice[];
-  addInvoice: (invoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => void;
+  addInvoice: (invoice: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => Invoice;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
   updateInvoiceNumber: (id: string, invoiceNumber: string) => void;
   deleteInvoice: (id: string) => void;
@@ -57,7 +57,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
   const addInvoice = (invoiceData: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>) => {
     if (!currentCompany) {
       toast.error("No company selected. Please select or create a company first.");
-      return;
+      throw new Error("No company selected");
     }
     
     try {
@@ -65,6 +65,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
       
       // Generate invoice number
       const invoiceNumber = `${currentCompany.invoicePrefix}${currentCompany.invoiceCounter.toString().padStart(3, '0')}`;
+      console.log("Generated invoice number:", invoiceNumber);
       
       const newInvoice: Invoice = {
         ...invoiceData,
