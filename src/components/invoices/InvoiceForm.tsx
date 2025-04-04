@@ -249,12 +249,19 @@ export function InvoiceForm({ initialInvoice, isEditMode = false }: InvoiceFormP
         taxAmount,
         total,
         notes: data.notes || "",
-        status: data.status
+        status: data.status,
+        // For edit mode, the updatedAt will be added by the updateInvoice function
+        // For new invoices, both createdAt and updatedAt will be added by addInvoice
       };
       
       if (isEditMode && initialInvoice) {
         console.log("Updating invoice with data:", invoiceData);
-        const updatedInvoice = updateInvoice(initialInvoice.id, invoiceData);
+        // When updating, we need to include the createdAt from the original invoice
+        // The updateInvoice function will handle this for us
+        const updatedInvoice = updateInvoice(initialInvoice.id, {
+          ...invoiceData,
+          createdAt: initialInvoice.createdAt
+        });
         console.log("Invoice updated:", updatedInvoice);
         toast.success(`Invoice ${updatedInvoice.invoiceNumber} updated successfully`);
       } else {

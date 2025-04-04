@@ -7,7 +7,7 @@ import { toast } from "sonner";
 interface InvoiceContextType {
   invoices: Invoice[];
   addInvoice: (invoice: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => Invoice;
-  updateInvoice: (id: string, invoice: Omit<Invoice, 'id' | 'createdAt'>) => Invoice;
+  updateInvoice: (id: string, invoice: Omit<Invoice, 'id'>) => Invoice;
   deleteInvoice: (id: string) => void;
   getInvoicesByCompany: (companyId: string) => Invoice[];
   getInvoice: (id: string) => Invoice | undefined;
@@ -104,12 +104,13 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         total: Number(item.total)
       }));
       
+      const now = new Date();
       const newInvoice: Invoice = {
         ...invoiceData,
         items: formattedItems,
         id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: now,
+        updatedAt: now
       };
       
       console.log("Created new invoice:", newInvoice);
@@ -129,7 +130,7 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const updateInvoice = (id: string, invoiceData: Omit<Invoice, 'id' | 'createdAt'>) => {
+  const updateInvoice = (id: string, invoiceData: Omit<Invoice, 'id'>) => {
     if (!currentCompany) {
       toast.error("No company selected. Please select or create a company first.");
       throw new Error("No company selected");
@@ -143,6 +144,12 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Invoice number is required");
       }
       
+      const existingInvoice = invoices.find(inv => inv.id === id);
+      if (!existingInvoice) {
+        toast.error(`Invoice with ID ${id} not found`);
+        throw new Error(`Invoice with ID ${id} not found`);
+      }
+      
       const formattedItems = invoiceData.items.map(item => ({
         id: String(item.id),
         description: String(item.description),
@@ -151,11 +158,13 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
         total: Number(item.total)
       }));
       
+      // Preserve the createdAt date from the existing invoice
       const updatedInvoice: Invoice = {
         ...invoiceData,
         items: formattedItems,
         id,
-        updatedAt: new Date()
+        createdAt: existingInvoice.createdAt, // Preserve original createdAt
+        updatedAt: new Date() // Update with current time
       };
       
       console.log("Updated invoice object:", updatedInvoice);
