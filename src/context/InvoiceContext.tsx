@@ -29,7 +29,29 @@ export function InvoiceProvider({ children }: { children: React.ReactNode }) {
     try {
       const savedInvoices = localStorage.getItem('invoices');
       console.log("Loading invoices from localStorage:", savedInvoices);
-      return savedInvoices ? JSON.parse(savedInvoices) : [];
+      
+      if (savedInvoices) {
+        const parsed = JSON.parse(savedInvoices);
+        
+        const formattedInvoices = parsed.map((invoice: any) => ({
+          ...invoice,
+          items: invoice.items.map((item: any) => ({
+            id: item.id,
+            description: item.description || '',
+            quantity: Number(item.quantity),
+            unitPrice: Number(item.unitPrice),
+            total: Number(item.total)
+          })),
+          subtotal: Number(invoice.subtotal),
+          taxRate: Number(invoice.taxRate),
+          taxAmount: Number(invoice.taxAmount),
+          total: Number(invoice.total)
+        }));
+        
+        console.log("Formatted invoices after loading:", formattedInvoices);
+        return formattedInvoices;
+      }
+      return [];
     } catch (error) {
       console.error("Error loading invoices from localStorage:", error);
       return [];

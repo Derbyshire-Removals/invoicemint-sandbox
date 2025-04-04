@@ -5,7 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useInvoice } from "@/context/InvoiceContext";
 import { useEffect, useState } from "react";
 import { useCompany } from "@/context/CompanyContext";
-import { Invoice } from "@/types";
+import { Invoice, InvoiceItem } from "@/types";
 
 const InvoiceFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,21 +30,30 @@ const InvoiceFormPage = () => {
       if (invoice) {
         console.log("Found invoice to edit:", invoice);
         
-        // Ensure invoice items are properly formatted with correct number types
-        const formattedItems = invoice.items.map(item => ({
-          id: item.id,
-          description: item.description || '',
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.unitPrice),
-          total: Number(item.total)
-        }));
+        // Deep copy and explicitly convert each property to ensure correct types
+        const formattedItems: InvoiceItem[] = invoice.items.map(item => {
+          // Log each item before processing to help debug
+          console.log("Processing item:", JSON.stringify(item));
+          
+          return {
+            id: item.id,
+            description: item.description || '',
+            quantity: Number(item.quantity),
+            unitPrice: Number(item.unitPrice),
+            total: Number(item.total)
+          };
+        });
         
         console.log("Formatted items for edit:", formattedItems);
         
-        setInvoiceToEdit({
+        // Create a new object with properly formatted data
+        const formattedInvoice: Invoice = {
           ...invoice,
           items: formattedItems
-        });
+        };
+        
+        console.log("Setting invoiceToEdit with formatted data:", formattedInvoice);
+        setInvoiceToEdit(formattedInvoice);
       } else {
         // If invoice not found with this ID, redirect to invoices list
         console.log(`Invoice with ID ${id} not found, redirecting`);

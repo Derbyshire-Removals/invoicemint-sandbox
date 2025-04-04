@@ -115,13 +115,16 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
   };
 
   const defaultItems = isEditing && invoiceToEdit?.items ? 
-    invoiceToEdit.items.map(item => ({
-      id: item.id,
-      description: item.description || '',
-      quantity: Number(item.quantity) || 1,
-      unitPrice: Number(item.unitPrice) || 0,
-      total: Number(item.total) || 0
-    })) : 
+    invoiceToEdit.items.map(item => {
+      console.log("Item for defaultItems:", JSON.stringify(item));
+      return {
+        id: item.id,
+        description: item.description || '',
+        quantity: Number(item.quantity) || 1,
+        unitPrice: Number(item.unitPrice) || 0,
+        total: Number(item.total) || 0
+      };
+    }) : 
     [createEmptyInvoiceItem()];
   
   console.log("Default items for form:", defaultItems);
@@ -154,9 +157,10 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
   useEffect(() => {
     if (isEditing && invoiceToEdit) {
       console.log("Resetting form with invoice data:", invoiceToEdit);
+      console.log("Items to reset form with:", JSON.stringify(invoiceToEdit.items));
       
       const formattedItems = invoiceToEdit.items.map(item => {
-        console.log("Item before formatting:", item);
+        console.log("Item before formatting:", JSON.stringify(item));
         return {
           id: item.id,
           description: item.description || '',
@@ -183,17 +187,22 @@ export function InvoiceForm({ invoiceToEdit, isEditing = false }: InvoiceFormPro
         taxRate: invoiceToEdit.taxRate,
         notes: invoiceToEdit.notes || "",
         status: invoiceToEdit.status,
-      });
+      }, { keepDirty: false, keepTouched: false });
       
       setTimeout(() => {
         const items = form.getValues("items");
         const taxRate = form.getValues("taxRate");
         console.log("Items after form reset:", items);
-        const { subtotal, taxAmount, total } = calculateTotals(items, taxRate);
-        setSubtotal(subtotal);
-        setTaxAmount(taxAmount);
-        setTotal(total);
-      }, 100);
+        
+        if (items && items.length > 0) {
+          const { subtotal, taxAmount, total } = calculateTotals(items, taxRate);
+          setSubtotal(subtotal);
+          setTaxAmount(taxAmount);
+          setTotal(total);
+        } else {
+          console.error("Items array is empty or undefined after form reset");
+        }
+      }, 200);
     }
   }, [invoiceToEdit, isEditing, form, calculateTotals]);
   
