@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCompany } from "@/context/CompanyContext";
 import { PageTransition } from "../ui-custom/PageTransition";
 import { EmptyState } from "../ui-custom/EmptyState";
+import { BackupSettings } from "./BackupSettings";
 import { Building, Edit, PlusCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -172,6 +173,8 @@ export function CompanySettings() {
             ))}
           </div>
         )}
+        
+        <BackupSettings />
       </div>
 
       {/* New Company Dialog */}

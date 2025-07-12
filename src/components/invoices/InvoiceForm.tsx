@@ -260,7 +260,8 @@ export function InvoiceForm({ initialInvoice, isEditMode = false }: InvoiceFormP
         // The updateInvoice function will handle this for us
         const updatedInvoice = updateInvoice(initialInvoice.id, {
           ...invoiceData,
-          createdAt: initialInvoice.createdAt
+          createdAt: initialInvoice.createdAt,
+          updatedAt: new Date()
         });
         console.log("Invoice updated:", updatedInvoice);
         toast.success(`Invoice ${updatedInvoice.invoiceNumber} updated successfully`);
